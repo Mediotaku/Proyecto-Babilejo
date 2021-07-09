@@ -1,0 +1,33 @@
+{
+  "name": "proyecto-babilejo",
+  "version": "1.0.0",
+  "description": "Web chat con traduccion automatica",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "yarn build:css && node index.js",
+    "build:css": "postcss static/styles/tailwind.css -o static/styles/style.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mediotaku/Proyecto-Babilejo.git"
+  },
+  "keywords": [
+    "chat"
+  ],
+  "author": "Mediotaku",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mediotaku/Proyecto-Babilejo/issues"
+  },
+  "homepage": "https://github.com/Mediotaku/Proyecto-Babilejo#readme",
+  "dependencies": {
+    "autoprefixer": "^10.2.6",
+    "express": "^4.17.1",
+    "nvm": "0.0.4",
+    "postcss": "^8.3.5",
+    "postcss-cli": "^8.3.1",
+    "socket.io": "^4.1.2",
+    "tailwindcss": "^2.2.4"
+  }
+}
