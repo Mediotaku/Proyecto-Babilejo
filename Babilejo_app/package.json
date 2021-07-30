@@ -1,0 +1,30 @@
+{
+  "name": "babilejo_app",
+  "version": "1.0.0",
+  "description": "Web chat con traduccion automatica de mensajes",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "*",
+    "socket.io": "*"
+  },
+  "devDependencies": {
+    "nodemon": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mediotaku/Proyecto-Babilejo.git"
+  },
+  "keywords": [
+    "chat"
+  ],
+  "author": "Mediotaku",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mediotaku/Proyecto-Babilejo/issues"
+  },
+  "homepage": "https://github.com/Mediotaku/Proyecto-Babilejo#readme"
+}
