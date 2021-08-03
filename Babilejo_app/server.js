@@ -10,16 +10,21 @@ const io = require('socket.io') (server, {
     }
   });
 let users = [];
-let messages = [];
-let index = 0;
+//let messages = [];
+//let index = 0;
 
 io.on('connection', socket => {
     //Inicio de sesion
     socket.on('start', showSignIn => {
+      //Si ya esta logeado se emite loggedIn, pero sino, se transmite solo la informacion de los users
       if(!showSignIn){
         io.to(socket.id).emit('loggedIn',{
-          users: users.map(s => s.username),
-          messages: messages
+          users: users.map(s => s.username)
+        });
+      }
+      else{
+        io.to(socket.id).emit('userData',{
+          users: users.map(s => s.username)
         });
       }
     });
@@ -32,19 +37,14 @@ io.on('connection', socket => {
 
         io.emit('userOnline', socket.username);
     });
-
-    socket.on('msg', msg => {
-        let message = {
-            index: index,
-            username: socket.username,
-            msg: msg
+    //Mensaje a usuario especifico
+    socket.on('msg', message => {   
+      for(i=0;i<users.length;i++){
+        if(users[i].username==message.usernameTo){
+          io.to(users[i].id).emit('msg', message);
+          break;
         }
-
-        messages.push(message);
-
-        io.emit('msg', message);
-
-        index++;
+      }
     })
 
     //Desconectado
