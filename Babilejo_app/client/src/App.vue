@@ -5,11 +5,15 @@
     </div>
     <div class="chat-room">
       <ChatRoom v-bind:messages="messages" v-bind:currentChatUser="currentChatUser" v-bind:username="username"
-       @sendMessage="this.sendMessage"/>
+       @sendMessage="this.sendMessage" v-bind:currentLanguage="currentLanguage" @openLanguageModal="openmodal=true"/>
     </div>
   </div>
   <div v-if="showSignIn">
     <SignIn v-bind:users="users" @signedin="setNickname" />
+  </div>
+  <div v-if="openmodal">
+    <LanguageModal v-bind:currentLanguage="currentLanguage" @setCurrentLanguage="this.setCurrentLanguage"
+    @closeLanguageModal="this.closeLanguageModal" />
   </div>
 </template>
 
@@ -18,10 +22,11 @@ import io from 'socket.io-client';
 import SignIn from './components/SignIn.vue';
 import ChatRoom from './components/ChatRoom.vue';
 import ChatList from './components/ChatList.vue';
+import LanguageModal from './components/LanguageModal.vue';
 
 export default {
   name: 'App',
-  components: { SignIn, ChatRoom, ChatList },
+  components: { SignIn, ChatRoom, ChatList, LanguageModal },
   data: function (){
     return {
       username: "",
@@ -30,7 +35,9 @@ export default {
       users: [],
       showSignIn: true,
       currentChatId: "",
-      currentChatUser: ""
+      currentChatUser: "",
+      currentLanguage: "es",
+      openmodal: false
     }
   },
   methods: {
@@ -45,8 +52,22 @@ export default {
         this.socket.emit('newuser', this.username);
       });
       this.socket.on('msg', message => {
-        this.messages.push(message);
+        this.requestTranslation(message);      
       })
+    },
+    async requestTranslation(message) {
+      const res = await fetch("https://translate.astian.org/translate", {
+        method: "POST",
+        body: JSON.stringify({
+          q: message.msg,
+          source: message.language,
+          target: this.currentLanguage
+        }),
+        headers: { "Content-Type": "application/json" }
+      });
+      const json = await res.json();
+      message.msg = json.translatedText;
+      this.messages.push(message);
     },
     setNickname: function(value){
       this.showSignIn=false;
@@ -61,7 +82,9 @@ export default {
       let message = {
           usernameFrom: this.username,
           usernameTo: this.users[this.currentChatId],
-          msg: msg
+          msg: msg,
+          timestamp: this.getTime(),
+          language: this.currentLanguage
       }
       this.messages.push(message);
       this.socket.emit('msg', message);
@@ -69,6 +92,17 @@ export default {
     setChatId: function (value){
       this.currentChatId = value;
       this.currentChatUser = this.users[this.currentChatId];
+    },
+    getTime: function () {
+      var aux = new Date().toLocaleTimeString();
+      aux = aux.substr(0, aux.lastIndexOf(':'));
+      return aux;
+    },
+    setCurrentLanguage: function (value) {
+      this.currentLanguage=value;
+    },
+    closeLanguageModal: function(){
+      this.openmodal= false;
     }
   },
   created: function() {
