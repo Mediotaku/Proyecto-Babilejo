@@ -34,6 +34,7 @@
 export default {
   name: 'chatroom',
   props: ['messages', 'currentChatUser', 'username', 'currentLanguage'],
+  emits: ['openLanguageModal', 'sendMessage'],
   data: function () {
     return {
       msg: ""
@@ -92,7 +93,7 @@ export default {
   computed: {
     currentMessages: function() {
       return this.messages.filter(m => (m.usernameFrom == this.currentChatUser && m.usernameTo == this.username)||
-      m.usernameFrom == this.username && m.usernameTo == this.currentChatUser)
+      m.usernameFrom == this.username && m.usernameTo == this.currentChatUser).slice().reverse();
     }
   }
 }
@@ -105,11 +106,12 @@ export default {
 .chat-window {
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   /*Es necesario ~ para que la ruta funcione en <style>*/
   background-image: url("~@/assets/Background1.svg");
   background-repeat: no-repeat;
   background-position: center;
-  height: 100%;
+  height: 91%;
 }
 .backgroundchat {
   background: url("~@/assets/Gradient-overlay.svg"), linear-gradient(127.24deg, rgba(121, 123, 232, 0.76) 2.77%, rgba(121, 123, 232, 0.278026) 54.4%, rgba(121, 123, 232, 0) 97.42%), #79E893;
@@ -120,8 +122,8 @@ export default {
   display:flex;
   align-items: center;
   justify-content: space-between;
-  background: #797BE8;
-  min-height: 5rem;
+  background: #5E60CE;
+  min-height: 9%;
   width: 100%;
 }
 .chat-bar-text{
@@ -156,10 +158,11 @@ export default {
 
 .messages {
   flex: 1;
-   
-  flex-direction: column;
-  justify-content: flex-end;
+  overflow: auto;
+  flex-direction: column-reverse;
+  justify-content: flex-start;
   display: flex;
+  height: 100%;
 }
 .message-wrap{
   display: flex;
@@ -182,7 +185,7 @@ export default {
   padding: 1rem;
   margin-left: 10rem;
   box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.47);
-  margin-top:2rem;
+  margin-bottom:2rem;
   word-break: break-all;
 } 
 
@@ -191,7 +194,7 @@ export default {
   position: absolute;
   border-style: solid;
   border-width: 18px 43px 18px 0;
-  border-color: transparent #FFFFFF;
+  border-color: transparent #FAFAFA;
   display: block;
   width: 0;
   z-index: 1;
@@ -227,7 +230,7 @@ export default {
   padding: 1rem;
   margin-right: 10rem;
   box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.2);
-  margin-top:2rem;
+  margin-bottom:2rem;
   word-break: break-all;
 } 
 
@@ -254,7 +257,7 @@ export default {
   box-shadow: 1px 1px 14px rgba(0, 0, 0, 0.25);
   border-radius: 68px;
   width: 70rem;
-  height: 3.5rem;
+  height: 4rem;
   align-self: center;
   margin-bottom: 3rem;
   margin-top: 3rem;

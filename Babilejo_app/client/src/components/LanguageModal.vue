@@ -110,6 +110,10 @@ export default {
     //Posicion 0
     var initialindex=this.languageArray.indexOf(this.currentLanguage)
     this.renderLanguageList(initialindex);
+  },
+  //Eliminar evento antes de cerrar el componente
+  beforeUnmount() {
+    window.removeEventListener('wheel', this.handleWheelThis);
   }
 }
 </script>
@@ -137,6 +141,7 @@ export default {
   margin: auto;
   padding: 20px;
   width: 28rem;
+  box-shadow: 1px 1px 14px rgba(0, 0, 0, 0.25);
 }
 .modal-content img{
   width: 10rem;

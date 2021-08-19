@@ -55,6 +55,6 @@ io.on('connection', socket => {
     });
 })
 
-server.listen(process.env.PORT || 3000, () =>{
+server.listen(process.env.PORT || 3000, process.env.LISTEN_TO, () =>{
     console.log("Listening on port %s", process.env.PORT || 3000);
 })

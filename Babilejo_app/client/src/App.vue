@@ -1,7 +1,8 @@
 <template>
   <div v-if="!showSignIn" class="main-interface">
     <div class="chat-sidebar">
-      <ChatList v-bind:users="users" v-bind:username="username"  @selectChat="setChatId" />
+      <ChatList v-bind:users="users" v-bind:username="username"  @selectChat="setChatId" 
+      v-bind:unreadMessages="unreadMessages" v-bind:messages="messages"/>
     </div>
     <div class="chat-room">
       <ChatRoom v-bind:messages="messages" v-bind:currentChatUser="currentChatUser" v-bind:username="username"
@@ -24,20 +25,22 @@ import ChatRoom from './components/ChatRoom.vue';
 import ChatList from './components/ChatList.vue';
 import LanguageModal from './components/LanguageModal.vue';
 
+
 export default {
   name: 'App',
   components: { SignIn, ChatRoom, ChatList, LanguageModal },
   data: function (){
     return {
       username: "",
-      socket: io("http://localhost:3000"),
+      socket: io({path: '/babilejo_server/socket.io'}),
       messages: [],
       users: [],
       showSignIn: true,
       currentChatId: "",
       currentChatUser: "",
       currentLanguage: "es",
-      openmodal: false
+      openmodal: false,
+      unreadMessages: []
     }
   },
   methods: {
@@ -52,7 +55,19 @@ export default {
         this.socket.emit('newuser', this.username);
       });
       this.socket.on('msg', message => {
-        this.requestTranslation(message);      
+        this.$notification.show(message.usernameFrom, {
+        body: message.msg}, {})
+        //Añadir a mensajes no leidos si no es el chat actualmente seleccionado
+        if(this.users.indexOf(message.usernameFrom)!=this.currentChatId){
+          this.unreadMessages[this.users.indexOf(message.usernameFrom)]++;
+        }
+        //Tienen los dos usuarios el mismo idioma seleccionado?
+        if(message.language==this.currentLanguage){
+          this.messages.push(message);
+        }
+        else{
+          this.requestTranslation(message);  
+        }    
       })
     },
     async requestTranslation(message) {
@@ -92,6 +107,8 @@ export default {
     setChatId: function (value){
       this.currentChatId = value;
       this.currentChatUser = this.users[this.currentChatId];
+      //Poner los unreadMessages de user seleccionado a 0
+      this.unreadMessages[this.currentChatId] = 0;
     },
     getTime: function () {
       var aux = new Date().toLocaleTimeString();
@@ -110,11 +127,16 @@ export default {
     this.socket.emit('start', this.showSignIn);
     this.socket.on('userData', data => {
         this.users = data.users;
+        for(var i=0;i<this.users.length;i++){
+          this.unreadMessages.push(0)
+        }
     });
     this.socket.on('userOnline', user => {
+        this.unreadMessages.push(0);
         this.users.push(user);
     });
     this.socket.on('userLeft', user => {
+        this.unreadMessages.splice(this.users.indexOf(user), 1);
         this.users.splice(this.users.indexOf(user), 1);
     });
   }
@@ -143,11 +165,13 @@ body {
   display: flex;
   flex-direction: column;
   width: calc(100% / 3.5);
+  height: 100%;
 }
 .chat-room{
   z-index: 1;
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100%;
 }
 </style>
