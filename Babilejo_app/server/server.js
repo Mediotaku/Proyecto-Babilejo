@@ -13,6 +13,8 @@ let users = [];
 //let messages = [];
 //let index = 0;
 
+app.use(express.static("public"));
+
 io.on('connection', socket => {
     //Inicio de sesion
     socket.on('start', showSignIn => {

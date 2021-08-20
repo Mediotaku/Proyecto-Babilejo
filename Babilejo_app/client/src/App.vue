@@ -32,7 +32,7 @@ export default {
   data: function (){
     return {
       username: "",
-      socket: io({path: '/babilejo_server/socket.io'}),
+      socket: io("http://babilejo.herokuapp.com:3000"),
       messages: [],
       users: [],
       showSignIn: true,
