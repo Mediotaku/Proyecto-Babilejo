@@ -123,7 +123,6 @@ export default {
 .modal {
   position: fixed;
   z-index: 3; 
-  padding-top: 20rem;
   left: 0;
   top: 0;
   width: 100%;
@@ -138,7 +137,9 @@ export default {
   align-items: center;
   background: #5E60CE;
   border-radius: 157px;
-  margin: auto;
+  margin-top: 20%;
+  margin-right: auto;
+  margin-left:auto;
   padding: 20px;
   width: 28rem;
   box-shadow: 1px 1px 14px rgba(0, 0, 0, 0.25);
@@ -172,5 +173,18 @@ export default {
 }
 .wheel2 {
   margin-left: 1.1rem;
+}
+@media (max-width: 800px) {
+  .modal-content{
+    width: 19rem;
+  }
+  .modal-content img{
+    width: 10rem;
+  }
+  .wheel-selector{
+    width: 10rem;
+    height: 9rem;
+    border-radius: 0px 90px 90px 10px;
+  } 
 }
 </style>

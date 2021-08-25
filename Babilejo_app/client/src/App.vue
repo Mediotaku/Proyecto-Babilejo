@@ -1,12 +1,14 @@
 <template>
   <div v-if="!showSignIn" class="main-interface">
-    <div class="chat-sidebar">
+    <div @click="closeMenu" id="menu-overlay" class="menu-overlay"></div>
+    <div id="chat-sidebar" class="chat-sidebar">
       <ChatList v-bind:users="users" v-bind:username="username"  @selectChat="setChatId" 
-      v-bind:unreadMessages="unreadMessages" v-bind:messages="messages"/>
+      v-bind:unreadMessages="unreadMessages" v-bind:messages="messages" @pushNotifications="setPushNotifications"/>
     </div>
     <div class="chat-room">
       <ChatRoom v-bind:messages="messages" v-bind:currentChatUser="currentChatUser" v-bind:username="username"
-       @sendMessage="this.sendMessage" v-bind:currentLanguage="currentLanguage" @openLanguageModal="openmodal=true"/>
+       @sendMessage="this.sendMessage" v-bind:currentLanguage="currentLanguage" @openLanguageModal="openmodal=true"
+       @openMenu="openMenu"/>
     </div>
   </div>
   <div v-if="showSignIn">
@@ -32,7 +34,7 @@ export default {
   data: function (){
     return {
       username: "",
-      socket: io("http://babilejo.herokuapp.com:3000"),
+      socket: io("http://localhost:3000"),
       messages: [],
       users: [],
       showSignIn: true,
@@ -40,7 +42,10 @@ export default {
       currentChatUser: "",
       currentLanguage: "es",
       openmodal: false,
-      unreadMessages: []
+      unreadMessages: [],
+      pushNotifications: false,
+      windowFocus: true,
+      unreadMessagesTotal: 0
     }
   },
   methods: {
@@ -55,14 +60,23 @@ export default {
         this.socket.emit('newuser', this.username);
       });
       this.socket.on('msg', message => {
-        this.$notification.show(message.usernameFrom, {
-        body: message.msg}, {})
+        //Si no esta la ventana seleccionada, cambiar titulo 
+        /*if(!this.windowFocus){
+          this.unreadMessagesTotal++;
+          let title_el = document.querySelector("title")
+          title_el.innerHTML="Babilejo ("+this.unreadMessagesTotal+")";
+        }*/
         //Añadir a mensajes no leidos si no es el chat actualmente seleccionado
         if(this.users.indexOf(message.usernameFrom)!=this.currentChatId){
           this.unreadMessages[this.users.indexOf(message.usernameFrom)]++;
         }
         //Tienen los dos usuarios el mismo idioma seleccionado?
         if(message.language==this.currentLanguage){
+          if(this.pushNotifications){
+            var img = require("@/assets/BabilejoIcon.png");
+            this.$notification.show(message.usernameFrom, {
+            body: message.msg, icon: img}, {})
+          }
           this.messages.push(message);
         }
         else{
@@ -82,6 +96,11 @@ export default {
       });
       const json = await res.json();
       message.msg = json.translatedText;
+      if(this.pushNotifications){
+        var img = require("@/assets/BabilejoIcon.png");
+        this.$notification.show(message.usernameFrom, {
+        body: message.msg, icon: img}, {})
+      }
       this.messages.push(message);
     },
     setNickname: function(value){
@@ -109,6 +128,10 @@ export default {
       this.currentChatUser = this.users[this.currentChatId];
       //Poner los unreadMessages de user seleccionado a 0
       this.unreadMessages[this.currentChatId] = 0;
+      
+      //Cerrar menu al seleccionar chat
+      document.getElementById("menu-overlay").classList.remove('menu-overlay-visible');
+      document.getElementById("chat-sidebar").classList.remove('chat-sidebar-visible');
     },
     getTime: function () {
       var aux = new Date().toLocaleTimeString();
@@ -120,6 +143,17 @@ export default {
     },
     closeLanguageModal: function(){
       this.openmodal= false;
+    },
+    openMenu: function(){
+      document.getElementById("menu-overlay").classList.add('menu-overlay-visible');
+      document.getElementById("chat-sidebar").classList.add('chat-sidebar-visible');
+    },
+    closeMenu: function(){
+      document.getElementById("menu-overlay").classList.remove('menu-overlay-visible');
+      document.getElementById("chat-sidebar").classList.remove('chat-sidebar-visible');
+    },
+    setPushNotifications: function(value){
+      this.pushNotifications=value;
     }
   },
   created: function() {
@@ -138,6 +172,15 @@ export default {
     this.socket.on('userLeft', user => {
         this.unreadMessages.splice(this.users.indexOf(user), 1);
         this.users.splice(this.users.indexOf(user), 1);
+    });
+  },
+  mounted: function() {
+    window.addEventListener('blur', function(){
+      this.windowFocus=false;});
+    window.addEventListener('focus', function(){
+      document.title="Babilejo";
+      this.unreadMessagesTotal=0; 
+      this.windowFocus=true;
     });
   }
 }
@@ -167,11 +210,47 @@ body {
   width: calc(100% / 3.5);
   height: 100%;
 }
+.menu-overlay{
+  position: fixed;
+  z-index: 3;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: rgba(119, 119, 119, 0.59);
+}
 .chat-room{
   z-index: 1;
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+}
+.menu-overlay{
+  visibility: hidden;
+  opacity: 0;
+}
+@media (max-width: 800px){
+  .chat-sidebar{
+    z-index: 4;
+    position: fixed;
+    left: -45rem;
+    width: calc(100% / 1.3);
+    background-color: white;
+    transition: transform 1s ease-in;
+    transform: translateX(-45rem);
+  }
+  .chat-sidebar-visible{
+    transform: translateX(45rem);
+  }
+  .menu-overlay{
+    transition: opacity 600ms ease-in, visibility 600ms ease-in;
+  }
+  .menu-overlay-visible{
+    opacity: 1;
+    visibility: visible;
+  }
 }
 </style>

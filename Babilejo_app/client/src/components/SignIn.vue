@@ -157,4 +157,22 @@ export default {
   text-align: center;
   align-self: center;
 }
+
+@media (max-width: 761px) {
+  #logoanimate{
+    display: none;
+  }
+  .splitbar{
+    display: none;
+  }
+  .signin-container{
+    flex-direction: column;
+  }
+}
+@media (max-width: 1100px){
+  .signin-container label{
+    font-size: 1.3rem;
+    max-width: 350px;
+  }
+} 
 </style>

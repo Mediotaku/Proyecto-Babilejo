@@ -1,5 +1,6 @@
 <template>
   <div class="chat-bar">
+    <img @click="$emit('openMenu')" id="menu-button" src="@/assets/MenuIcon.svg"/>
     <div class="chat-bar-text" v-if="currentChatUser!=''">
       {{currentChatUser}}
     </div>
@@ -23,7 +24,7 @@
       </div>
     </div>
     <div v-if="currentChatUser!=''" class="input-container" >
-      <input type="text" v-model="msg" placeholder="Introduce tu mensaje...">
+      <input type="text" v-model="msg" @keyup.enter="sendMessage" placeholder="Introduce tu mensaje...">
       <img @click="sendMessage" src="@/assets/SendIcon.svg"/>
     </div>
   </div>
@@ -34,7 +35,7 @@
 export default {
   name: 'chatroom',
   props: ['messages', 'currentChatUser', 'username', 'currentLanguage'],
-  emits: ['openLanguageModal', 'sendMessage'],
+  emits: ['openLanguageModal', 'sendMessage', 'openMenu'],
   data: function () {
     return {
       msg: ""
@@ -100,6 +101,7 @@ export default {
 </script>
 
 <style scoped>
+/*Classes*/
 .hide{
   display: none;
 }
@@ -126,12 +128,18 @@ export default {
   min-height: 9%;
   width: 100%;
 }
+
 .chat-bar-text{
   font-family: 'Roboto';
   font-weight: normal;
-  font-size: 2rem;
+  font-size: 2em;
   color:white;
-  padding-left: 8rem;
+  margin-left: 8%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .language-selector-button{
@@ -147,6 +155,7 @@ export default {
   margin-right: 2rem;
   padding:0.2rem;
   padding-right: 0.7rem;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -183,7 +192,7 @@ export default {
 	border-radius: 25px;
   max-width: 20rem;
   padding: 1rem;
-  margin-left: 10rem;
+  margin-left: 12%;
   box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.47);
   margin-bottom:2rem;
   word-break: break-all;
@@ -228,7 +237,7 @@ export default {
 	border-radius: 25px;
   max-width: 20rem;
   padding: 1rem;
-  margin-right: 10rem;
+  margin-right: 12%;
   box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.2);
   margin-bottom:2rem;
   word-break: break-all;
@@ -256,7 +265,7 @@ export default {
   background: #FFFFFF;
   box-shadow: 1px 1px 14px rgba(0, 0, 0, 0.25);
   border-radius: 68px;
-  width: 70rem;
+  width: 80%;
   height: 4rem;
   align-self: center;
   margin-bottom: 3rem;
@@ -270,12 +279,71 @@ export default {
   border: 1px solid white; 
   border-radius: 68px;
   width: 60rem;
+  margin-left: 0.5rem;
   outline: none;
 }
 
 .input-container img {
   max-width: 2.5rem;
+  margin-right: 0.5rem;
   height: auto;
   cursor: pointer;
+}
+
+/*IDs*/
+
+#menu-button{
+  width: 3em;
+  padding-left: 1rem;
+  display: none;
+  cursor: pointer;
+}
+
+@media (max-width: 1000px){
+  .chat-window{
+    background-size: contain;
+  }
+}
+
+@media (max-width: 800px) {
+  #menu-button{
+    display: block;
+  }
+  .chat-bar-text{
+    font-size: 5vw;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    white-space: normal;
+  }
+  .language-selector-button{
+    font-size: 1rem;
+  }
+  .language-selector-button img {
+    width: 2.5rem;
+  }
+  .message{
+    margin-bottom:1rem;
+  }
+  .mymessage{
+    margin-bottom:1rem;
+  }
+  .input-container input{
+    margin-left: 1rem;
+  }
+}
+@media (max-height: 600px) {
+  .chat-bar-text{
+    font-size: 1.5rem;
+    padding-left: 3.5rem;
+  }
+  .language-selector-button{
+    font-size: 1rem;
+  }
+  .language-selector-button img {
+    width: 2.5rem;
+  }
+  .chat-bar{
+    min-height: 12%;
+  }
 }
 </style>
