@@ -3,10 +3,11 @@
     <div @click="closeMenu" id="menu-overlay" class="menu-overlay"></div>
     <div id="chat-sidebar" class="chat-sidebar">
       <ChatList v-bind:users="users" v-bind:username="username"  @selectChat="setChatId" 
-      v-bind:unreadMessages="unreadMessages" v-bind:messages="messages" @pushNotifications="setPushNotifications"/>
+      v-bind:unreadMessages="unreadMessages" v-bind:messages="messages" @pushNotifications="setPushNotifications"
+      @titleNotifications="setTitleNotifications" @soundNotifications="setSoundNotifications" v-bind:eventsData="eventsData"/>
     </div>
     <div class="chat-room">
-      <ChatRoom v-bind:messages="messages" v-bind:currentChatUser="currentChatUser" v-bind:username="username"
+      <ChatRoom v-bind:messages="messages" v-bind:currentChatUser="currentChatUser" v-bind:username="username" v-bind:eventsData="eventsData"
        @sendMessage="this.sendMessage" v-bind:currentLanguage="currentLanguage" @openLanguageModal="openmodal=true"
        @openMenu="openMenu"/>
     </div>
@@ -36,7 +37,7 @@ export default {
       username: "",
       socket: io("http://localhost:3000"),
       messages: [],
-      users: [],
+      users: [], //Contiene los nombre de los usuarios individuales y los eventos
       showSignIn: true,
       currentChatId: "",
       currentChatUser: "",
@@ -44,8 +45,11 @@ export default {
       openmodal: false,
       unreadMessages: [],
       pushNotifications: false,
+      soundNotifications: false,
+      titleNotifications:true,
       windowFocus: true,
-      unreadMessagesTotal: 0
+      unreadMessagesTotal: 0,
+      eventsData: []
     }
   },
   methods: {
@@ -60,42 +64,102 @@ export default {
         this.socket.emit('newuser', this.username);
       });
       this.socket.on('msg', message => {
-        //Si no esta la ventana seleccionada, cambiar titulo 
-        /*if(!this.windowFocus){
-          this.unreadMessagesTotal++;
-          let title_el = document.querySelector("title")
-          title_el.innerHTML="Babilejo ("+this.unreadMessagesTotal+")";
-        }*/
+        //Es un mensaje de un evento?
+        if(message.isEvent){
+          message.usernameFrom = message.usernameTo; 
+        }
+        //Actualizar titulo de la pagina
+        this.updatePageTitle();
+        //Reproducir sonido si es el primer unreadMessage de un usuario o evento y no esta la app en primer plano
+        if(this.soundNotifications && !this.windowFocus && this.unreadMessages[this.users.indexOf(message.usernameFrom)]==0){
+          var audio = new Audio(require('@/assets/MessageNotificationSoundExtended.wav'));
+          audio.play();
+          //Si esta en focus el chat se suma igualmente porque esta en segundo plano
+          if(this.users.indexOf(message.usernameFrom)==this.currentChatId){
+            this.unreadMessages[this.users.indexOf(message.usernameFrom)]++;
+          }
+        }
         //Añadir a mensajes no leidos si no es el chat actualmente seleccionado
         if(this.users.indexOf(message.usernameFrom)!=this.currentChatId){
           this.unreadMessages[this.users.indexOf(message.usernameFrom)]++;
         }
         //Tienen los dos usuarios el mismo idioma seleccionado?
         if(message.language==this.currentLanguage){
-          if(this.pushNotifications){
-            var img = require("@/assets/BabilejoIcon.png");
-            this.$notification.show(message.usernameFrom, {
-            body: message.msg, icon: img}, {})
+          this.postMessage(message);
+        }
+        else if(message.language=='epo' || this.currentLanguage=='epo'){
+          if(message.language=='epo'){
+            this.requestTranslationEsperanto(message, 0).then((result) => {
+              message=result;
+              //Si el lenguaje objetivo es ingles, enviar a la interfaz, sino, traducir de nuevo a la lengua objetivo
+              if(this.currentLanguage=="en"){
+                this.postMessage(message);
+              }
+              else{
+                this.requestTranslation(message).then((result) => {
+                  this.postMessage(result);
+                });
+              }
+            });
           }
-          this.messages.push(message);
+          else if(this.currentLanguage=='epo'){
+            this.requestTranslation(message, "en").then((result) => {
+              message=result;
+              this.requestTranslationEsperanto(message, 1).then((result) => {
+                this.postMessage(result);
+              });
+            });  
+          } 
         }
         else{
-          this.requestTranslation(message);  
+          this.requestTranslation(message).then((result) => {
+            this.postMessage(result);
+          });  
         }    
       })
     },
-    async requestTranslation(message) {
+    async requestTranslation(message, targetLanguage = this.currentLanguage) {
       const res = await fetch("https://translate.astian.org/translate", {
         method: "POST",
         body: JSON.stringify({
           q: message.msg,
           source: message.language,
-          target: this.currentLanguage
+          target: targetLanguage
         }),
         headers: { "Content-Type": "application/json" }
       });
       const json = await res.json();
       message.msg = json.translatedText;
+      
+      return message;
+    },
+    async requestTranslationEsperanto(message,direction){
+      var langPair=""
+      if(direction==0){
+        langPair="epo|eng";
+        message.language="en";
+      }
+      else{
+        langPair="eng|epo";
+        message.language="epo";
+      }      
+      let requestBody = new URLSearchParams(Object.entries({
+        langpair: langPair,
+        markUnknown: "no",
+        prefs: "",
+        q: message.msg
+      })).toString();
+      const res = await fetch("https://apertium.org/apy/translate", {
+      method: "POST",
+      body: requestBody,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      });
+      const json = await res.json();
+      message.msg=json.responseData.translatedText;
+        
+      return message
+    },
+    postMessage: function (message){
       if(this.pushNotifications){
         var img = require("@/assets/BabilejoIcon.png");
         this.$notification.show(message.usernameFrom, {
@@ -112,13 +176,15 @@ export default {
 
       this.joinServer();
     },
-    sendMessage: function (msg) {
+    sendMessage: function (msg, isevent = false) {
       let message = {
+          isEvent: isevent,
           usernameFrom: this.username,
           usernameTo: this.users[this.currentChatId],
           msg: msg,
           timestamp: this.getTime(),
-          language: this.currentLanguage
+          language: this.currentLanguage,
+          messageNick: this.username
       }
       this.messages.push(message);
       this.socket.emit('msg', message);
@@ -154,6 +220,19 @@ export default {
     },
     setPushNotifications: function(value){
       this.pushNotifications=value;
+    },
+    setTitleNotifications: function(value){
+      this.titleNotifications=value;
+    },
+    setSoundNotifications: function(value){
+      this.soundNotifications=value;
+    },
+    updatePageTitle: function(){
+      //Si no esta la ventana seleccionada, cambiar titulo 
+      if(!this.windowFocus && this.titleNotifications){
+        this.unreadMessagesTotal++;
+        document.title="Babilejo ("+this.unreadMessagesTotal+")";
+      }
     }
   },
   created: function() {
@@ -172,15 +251,23 @@ export default {
     this.socket.on('userLeft', user => {
         this.unreadMessages.splice(this.users.indexOf(user), 1);
         this.users.splice(this.users.indexOf(user), 1);
+        this.currentChatUser="";
+    });
+    this.socket.on('eventList', eventlist => {
+      if(eventlist!=null && eventlist!=undefined && eventlist!=""){
+        this.eventsData=JSON.parse(eventlist)['events']
+      }
     });
   },
   mounted: function() {
-    window.addEventListener('blur', function(){
+    //Necesita ser un operador arrow para que this no sea undefined
+    window.addEventListener('blur', () =>{
       this.windowFocus=false;});
-    window.addEventListener('focus', function(){
+    window.addEventListener('focus', () =>{
       document.title="Babilejo";
       this.unreadMessagesTotal=0; 
       this.windowFocus=true;
+      this.unreadMessages[this.currentChatId] = 0;
     });
   }
 }

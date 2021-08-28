@@ -1,0 +1,17 @@
+{
+  "__comment":[
+    {
+      "comentario": "En este comentario se describe el formato para introducir cada uno de los atributos de un nuevo evento",
+      "title": "El nombre del evento, debe ser de x o menos caracteres, cambiarlo implica researlo por completo",
+      "starDate": "Fecha y hora exacta de inicio del evento, en formato Javascript: ",
+      "description": "Descripcion que aparece al clicar el nombre del evento en la interfaz, debe ser de x o menos caracteres"
+    }
+  ],
+  "events":[
+    {
+      "title": "Evento de prueba",
+      "startDate": "2021-08-23T18:25:43Z",
+      "description": "Esto es un evento de prueba para demostrar las capacidades de Babilejo"
+    }
+  ]
+}

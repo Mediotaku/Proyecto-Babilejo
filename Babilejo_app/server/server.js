@@ -9,26 +9,44 @@ const io = require('socket.io') (server, {
       origin: '*',
     }
   });
+
+//Lectura de Eventos.json, con los detalles de cada evento
+const fs = require("fs")
+var filePath = "./Eventos.json";
+var eventsFile = ""
+//En el servidor solo contiene la lista de usuarios, en el cliente la de usuarios y eventos
 let users = [];
-//let messages = [];
-//let index = 0;
 
 app.use(express.static("public"));
 
+function constructUsers(){
+  var aux = users.map(s => s.username);
+  var eventsData= JSON.parse(eventsFile)['events'];
+  for(var i=0;i<eventsData.length;i++){
+    aux.push(eventsData[i].title);
+  }
+  return aux;
+}
+
 io.on('connection', socket => {
+    //Leer los eventos e introducirlos como un usuario especial 
+    if(eventsFile == ""){
+      eventsFile = fs.readFileSync(filePath, {encoding: "utf8"});
+    }
     //Inicio de sesion
     socket.on('start', showSignIn => {
       //Si ya esta logeado se emite loggedIn, pero sino, se transmite solo la informacion de los users
       if(!showSignIn){
         io.to(socket.id).emit('loggedIn',{
-          users: users.map(s => s.username)
+          users: constructUsers()
         });
       }
       else{
         io.to(socket.id).emit('userData',{
-          users: users.map(s => s.username)
+          users: constructUsers()
         });
       }
+      io.emit('eventList', eventsFile);
     });
 
     //Nuevo usuario
@@ -40,12 +58,17 @@ io.on('connection', socket => {
         io.emit('userOnline', socket.username);
     });
     //Mensaje a usuario especifico
-    socket.on('msg', message => {   
-      for(i=0;i<users.length;i++){
-        if(users[i].username==message.usernameTo){
-          io.to(users[i].id).emit('msg', message);
-          break;
+    socket.on('msg', message => {
+      if(!message.isEvent){   
+        for(i=0;i<users.length;i++){
+          if(users[i].username==message.usernameTo){
+            io.to(users[i].id).emit('msg', message);
+            break;
+          }
         }
+      }
+      else{ //Es un mensaje de un evento, emitir para todos los usuarios
+        io.emit('msg', message)
       }
     })
 
@@ -56,6 +79,24 @@ io.on('connection', socket => {
         users.splice(users.indexOf(socket), 1);
     });
 })
+
+//Detectar cambios en la lista de eventos actuales
+fs.watch(filePath, function(event) {
+    if (event === "change") {
+        fs.readFile(filePath, {encoding: "utf8"}, function (err, data) {
+          if (err) throw err;
+          eventsFile = data
+          if(eventsFile!=null && eventsFile!=undefined && eventsFile!=""){
+            //Emitir de nuevo la lista completa y los detalles de eventos
+            io.emit('userData',{
+              users: constructUsers()
+            });
+            io.emit('eventList', data);
+          }
+        });
+        console.log("Cambio detectado en la tabla de eventos. Actualizando...");
+    }
+});
 
 server.listen(process.env.PORT || 3000, process.env.LISTEN_TO, () =>{
     console.log("Listening on port %s", process.env.PORT || 3000);

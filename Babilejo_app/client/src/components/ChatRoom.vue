@@ -14,10 +14,10 @@
   </div>
   <div class="chat-window" :class="{backgroundchat:currentChatUser!=''}">
     <div v-if="currentChatUser!=''" class="messages" id="messages-box">
-      <div :class="{'message-wrap':message.usernameFrom!=username, 'mymessage-wrap':message.usernameFrom==username}"
+      <div :class="{'message-wrap':message.messageNick!=username, 'mymessage-wrap':message.messageNick==username}"
       v-for="message in currentMessages" v-bind:key="messages.indexOf(message)">
-        <div :class="{message:message.usernameFrom!=username, mymessage:message.usernameFrom==username}">
-          <div class="username" :class="{hide:message.usernameFrom==username}">{{message.usernameFrom}}</div>
+        <div :class="{message:message.messageNick!=username, mymessage:message.messageNick==username}">
+          <div class="username" :class="{hide:message.messageNick==username}">{{message.messageNick}}</div>
           <div class="message-text">{{message.msg}}</div>
           <div class="message-time">{{message.timestamp}}</div>
         </div>
@@ -34,7 +34,7 @@
 
 export default {
   name: 'chatroom',
-  props: ['messages', 'currentChatUser', 'username', 'currentLanguage'],
+  props: ['messages', 'currentChatUser', 'username', 'currentLanguage', 'eventsData'],
   emits: ['openLanguageModal', 'sendMessage', 'openMenu'],
   data: function () {
     return {
@@ -43,7 +43,7 @@ export default {
   },
   methods: {
     sendMessage: function() {
-      this.$emit('sendMessage', this.msg);
+      this.$emit('sendMessage', this.msg, this.eventsData.some(event => event.title === this.currentChatUser));
       this.msg = "";
       //this.updateScroll();
     },
@@ -67,6 +67,9 @@ export default {
       else if(value=="en"){
         value="English"
       }
+      else if(value=="epo"){
+        value="Esperanto"
+      }
       return value
     },
     currentLanguageName: function(value){
@@ -85,6 +88,9 @@ export default {
       else if(value=="en"){
         value="English"
       }
+      else if(value=="epo"){
+        value="Esperanto"
+      }
       return value
     },
     openModal: function(){
@@ -93,8 +99,13 @@ export default {
   },
   computed: {
     currentMessages: function() {
-      return this.messages.filter(m => (m.usernameFrom == this.currentChatUser && m.usernameTo == this.username)||
-      m.usernameFrom == this.username && m.usernameTo == this.currentChatUser).slice().reverse();
+      if(this.eventsData.some(event => event.title === this.currentChatUser)){ //Es un evento?
+        return this.messages.filter(m => (m.usernameFrom == this.currentChatUser && m.isEvent == true)).slice().reverse();
+      }
+      else{
+        return this.messages.filter(m => (m.usernameFrom == this.currentChatUser && m.usernameTo == this.username)||
+        m.usernameFrom == this.username && m.usernameTo == this.currentChatUser).slice().reverse();
+      }
     }
   }
 }
@@ -329,6 +340,12 @@ export default {
   }
   .input-container input{
     margin-left: 1rem;
+  }
+}
+@media (max-width: 325px){
+  .chat-bar-text{
+    font-size: 4vw;
+    padding-left: 0.1rem;
   }
 }
 @media (max-height: 600px) {

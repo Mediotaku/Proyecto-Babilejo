@@ -23,6 +23,7 @@
         twodigit:unreadMessages[users.indexOf(user)]>9}">{{unreadMessages[users.indexOf(user)]}}</span>
       </div>
       <div class="chat-data">
+        <div class="event-flag" :class="{hide:!eventsData.some(event => event.title === user)}">Evento</div>
         <div class="chat-name" >{{user}}</div>
         <div class="chat-last" >{{lastMessage(user)}}</div>
       </div>
@@ -46,8 +47,8 @@
         </div>
         <div class="settings-notifications" :class="{'visible-settings':toggleNotificationsVar}">
           <label><input type="checkbox" value="push_checkbox" v-model="push_checkbox" @change="$emit('pushNotifications', push_checkbox)">Notificaciones en pantalla</label><br>
-          <!--<label><input type="checkbox" value="sound_checkbox" v-model="sound_checkbox">Notificaciones sonoras</label><br>
-          <label><input type="checkbox" value="light_checkbox" v-model="light_checkbox">Iluminar icono</label><br>-->
+          <label><input type="checkbox" value="sound_checkbox" v-model="sound_checkbox" @change="$emit('soundNotifications', sound_checkbox)">Notificaciones sonoras</label><br>
+          <label><input type="checkbox" value="title_checkbox" v-model="title_checkbox" @change="$emit('titleNotifications', title_checkbox)">Título de la pestaña</label><br>
         </div>
         <div class="settings-about" :class="{'visible-settings':toggleAboutVar}">
           <img :src="require('@/assets/BabilejoLogoSmall.svg')"/>
@@ -63,8 +64,8 @@
 <script>
 export default {
   name: 'chatlist',
-  props: ['users', 'username', 'unreadMessages', 'messages'],
-  emits: ['selectChat', 'pushNotifications'],
+  props: ['users', 'username', 'unreadMessages', 'messages', 'eventsData'],
+  emits: ['selectChat', 'pushNotifications', 'titleNotifications','soundNotifications'],
   data: function () {
     return {
       selected: undefined,
@@ -74,7 +75,7 @@ export default {
       toggleAboutVar: false,
       push_checkbox: false,
       sound_checkbox: false,
-      light_checkbox: true
+      title_checkbox: true
     }
   },
   methods: {
@@ -101,9 +102,6 @@ export default {
         }
       }
       return chatpreview;
-    },
-    settingsName: function(){
-
     }
   },
   computed: {
@@ -117,7 +115,9 @@ export default {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Bellota:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap');
-
+.hide{
+  display: none;
+}
 div.myself {
   display: none;
 }
@@ -220,18 +220,38 @@ div.myself {
   font-weight: bold;
   font-size: 1.5rem;
   padding-left: 1.2rem;
+  max-width: 15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.event-flag{
+  font-family: 'Roboto';
+  font-weight: normal;
+  font-size: 0.8rem;
+  margin-left: 0.8rem;
+  margin-bottom: 0.2rem;
+  padding: 2px;
+  padding-left: 0.5em;
+  color:white;
+  background-color: #5E60CE;
+  width: 2.7rem;
+  border-radius: 26px;
+}
+.chat-data {
+  width: 100%;
+  min-width: 0;
 }
 .chat-last{
   font-family: 'Roboto';
   font-weight: normal;
   font-size: 1rem;
   padding-left: 1.2rem;
-  width: 15rem;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
   padding-top: 0.2rem;
-} 
+}
 .watermark{
   position: absolute;
   bottom: 0;
@@ -348,6 +368,7 @@ div.myself {
   margin-left: 2rem;
   opacity:0;
   visibility: hidden;
+  background-color: white;
   transition: opacity 0.5s ease-in, visibility 0.5s ease-in;
 }
 
@@ -428,10 +449,9 @@ div.myself {
 }
 @media (max-height: 600px) {
   .chat-search{
-    height: 12%;
+    height: 4.5rem;
   }
 }
-
 @media (max-width: 800px){
   .chat-search{
     width: 114%;

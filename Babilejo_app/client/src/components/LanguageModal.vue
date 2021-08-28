@@ -18,7 +18,7 @@ export default {
   props: ['currentLanguage'],
    data: function () {
     return {
-      languageArray: ['ko','ja','es','fr','en'],
+      languageArray: ['ko','ja','es','fr','en','epo'],
       languageSelectorArray: [],
       localcurrentLanguage: this.currentLanguage
     }
@@ -40,6 +40,9 @@ export default {
       else if(value=="en"){
         value="English"
       }
+      else if(value=="epo"){
+        value="Esperanto"
+      }
       return value
     },
     currentLanguageName: function(value){
@@ -57,6 +60,9 @@ export default {
       }
       else if(value=="en"){
         value="English"
+      }
+      else if(value=="epo"){
+        value="Esperanto"
       }
       return value
     },
