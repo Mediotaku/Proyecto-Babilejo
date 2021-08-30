@@ -3,15 +3,23 @@
     {
       "comentario": "En este comentario se describe el formato para introducir cada uno de los atributos de un nuevo evento",
       "title": "El nombre del evento, debe ser de x o menos caracteres, cambiarlo implica researlo por completo",
-      "starDate": "Fecha y hora exacta de inicio del evento, en formato Javascript: ",
+      "starDate": "Fecha y hora exacta de inicio del evento, en formato Javascript ISO: year-mm-ddThour:min:secZ (Z señala que es UTC), la aplicacion calcula el tiempo restante cada 10 seg",
+      "img": "Se pueden utilizar imágenes personalizadas para los eventos, simplemente añadelas a la carpeta /public/eventIcons/ y escribe el nombre del archivo completo en este atributo",
       "description": "Descripcion que aparece al clicar el nombre del evento en la interfaz, debe ser de x o menos caracteres"
     }
   ],
   "events":[
     {
-      "title": "Evento de prueba",
-      "startDate": "2021-08-23T18:25:43Z",
-      "description": "Esto es un evento de prueba para demostrar las capacidades de Babilejo"
+      "title": "Evento sin iniciar",
+      "startDate": "2021-08-31T09:50:00Z",
+      "img": "interlingua.png",
+      "description": "Esto es un evento de prueba para demostrar las capacidades de Babilejo. En este caso el evento no ha comenzado aún, por lo que aparece la fecha de inicio."
+    },
+    {
+      "title": "Evento iniciado",
+      "startDate": "2021-08-30T02:59:00Z",
+      "img": "",
+      "description": "Esto es un evento de prueba para demostrar las capacidades de Babilejo. En este caso el evento ya comenzó, por lo que el usuario solo tiene que unirse, lo que implica que recibirá notificaciones del mismo."
     }
   ]
 }

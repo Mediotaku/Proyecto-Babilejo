@@ -68,7 +68,7 @@ io.on('connection', socket => {
         }
       }
       else{ //Es un mensaje de un evento, emitir para todos los usuarios
-        io.emit('msg', message)
+        socket.broadcast.emit('msg', message)
       }
     })
 

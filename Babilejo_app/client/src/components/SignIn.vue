@@ -156,6 +156,7 @@ export default {
   flex: 1;
   text-align: center;
   align-self: center;
+  margin-bottom: 4rem;
 }
 
 @media (max-width: 761px) {

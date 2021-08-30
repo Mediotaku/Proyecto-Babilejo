@@ -8,8 +8,9 @@
     </div>
     <div class="chat-room">
       <ChatRoom v-bind:messages="messages" v-bind:currentChatUser="currentChatUser" v-bind:username="username" v-bind:eventsData="eventsData"
-       @sendMessage="this.sendMessage" v-bind:currentLanguage="currentLanguage" @openLanguageModal="openmodal=true"
-       @openMenu="openMenu"/>
+       @sendMessage="this.sendMessage" v-bind:currentLanguage="currentLanguage" @openLanguageModal="openmodal=true" v-bind:eventsSubscribed="eventsSubscribed"
+       @openMenu="openMenu" @eventSubscribe="eventSubscribe" @openEventModal="openEventModal=true" v-bind:currentEventStarted="currentEventStarted"
+       @currentEventState="currentEventState"/>
     </div>
   </div>
   <div v-if="showSignIn">
@@ -19,6 +20,10 @@
     <LanguageModal v-bind:currentLanguage="currentLanguage" @setCurrentLanguage="this.setCurrentLanguage"
     @closeLanguageModal="this.closeLanguageModal" />
   </div>
+  <div v-if="openEventModal">
+    <EventModal v-bind:users="users" v-bind:currentChatUser="currentChatUser" v-bind:eventsData="eventsData" @eventUnsubscribe="eventUnsubscribe"
+    v-bind:eventsSubscribed="eventsSubscribed" @closeEventModal="openEventModal=false" @eventSubscribe="eventSubscribe" v-bind:currentEventStarted="currentEventStarted"/>
+  </div>
 </template>
 
 <script>
@@ -27,15 +32,16 @@ import SignIn from './components/SignIn.vue';
 import ChatRoom from './components/ChatRoom.vue';
 import ChatList from './components/ChatList.vue';
 import LanguageModal from './components/LanguageModal.vue';
+import EventModal from './components/EventModal.vue';
 
 
 export default {
   name: 'App',
-  components: { SignIn, ChatRoom, ChatList, LanguageModal },
+  components: { SignIn, ChatRoom, ChatList, LanguageModal, EventModal },
   data: function (){
     return {
       username: "",
-      socket: io("http://localhost:3000"),
+      socket: io("https://babilejo.herokuapp.com/"),
       messages: [],
       users: [], //Contiene los nombre de los usuarios individuales y los eventos
       showSignIn: true,
@@ -49,7 +55,10 @@ export default {
       titleNotifications:true,
       windowFocus: true,
       unreadMessagesTotal: 0,
-      eventsData: []
+      eventsData: [],
+      eventsSubscribed: [],
+      openEventModal: false,
+      currentEventStarted: false
     }
   },
   methods: {
@@ -68,20 +77,23 @@ export default {
         if(message.isEvent){
           message.usernameFrom = message.usernameTo; 
         }
-        //Actualizar titulo de la pagina
-        this.updatePageTitle();
-        //Reproducir sonido si es el primer unreadMessage de un usuario o evento y no esta la app en primer plano
-        if(this.soundNotifications && !this.windowFocus && this.unreadMessages[this.users.indexOf(message.usernameFrom)]==0){
-          var audio = new Audio(require('@/assets/MessageNotificationSoundExtended.wav'));
-          audio.play();
-          //Si esta en focus el chat se suma igualmente porque esta en segundo plano
-          if(this.users.indexOf(message.usernameFrom)==this.currentChatId){
+        //Si lo es, está suscrito a ese evento? Si no lo esta, no notificarle del mensaje
+        if(!message.isEvent || (message.isEvent && this.eventsSubscribed.some(event => event === message.usernameFrom))){
+          //Actualizar titulo de la pagina
+          this.updatePageTitle();
+          //Reproducir sonido si es el primer unreadMessage de un usuario o evento y no esta la app en primer plano
+          if(this.soundNotifications && !this.windowFocus && this.unreadMessages[this.users.indexOf(message.usernameFrom)]==0){
+            var audio = new Audio(require('@/assets/MessageNotificationSoundExtended.wav'));
+            audio.play();
+            //Si esta en focus el chat se suma igualmente porque esta en segundo plano
+            if(this.users.indexOf(message.usernameFrom)==this.currentChatId){
+              this.unreadMessages[this.users.indexOf(message.usernameFrom)]++;
+            }
+          }
+          //Añadir a mensajes no leidos si no es el chat actualmente seleccionado
+          if(this.users.indexOf(message.usernameFrom)!=this.currentChatId){
             this.unreadMessages[this.users.indexOf(message.usernameFrom)]++;
           }
-        }
-        //Añadir a mensajes no leidos si no es el chat actualmente seleccionado
-        if(this.users.indexOf(message.usernameFrom)!=this.currentChatId){
-          this.unreadMessages[this.users.indexOf(message.usernameFrom)]++;
         }
         //Tienen los dos usuarios el mismo idioma seleccionado?
         if(message.language==this.currentLanguage){
@@ -160,7 +172,8 @@ export default {
       return message
     },
     postMessage: function (message){
-      if(this.pushNotifications){
+      //Notificaciones de escritorio activadas y si es un evento, estar suscrito
+      if((this.pushNotifications && !message.isEvent) || (this.pushNotifications && message.isEvent && this.eventsSubscribed.some(event => event === message.usernameFrom))){
         var img = require("@/assets/BabilejoIcon.png");
         this.$notification.show(message.usernameFrom, {
         body: message.msg, icon: img}, {})
@@ -186,8 +199,10 @@ export default {
           language: this.currentLanguage,
           messageNick: this.username
       }
-      this.messages.push(message);
       this.socket.emit('msg', message);
+      //Despues de enviarlo para el resto de usuarios, postearlo en mi mismo
+      message.usernameFrom = this.users[this.currentChatId];
+      this.messages.push(message);
     },
     setChatId: function (value){
       this.currentChatId = value;
@@ -233,6 +248,15 @@ export default {
         this.unreadMessagesTotal++;
         document.title="Babilejo ("+this.unreadMessagesTotal+")";
       }
+    },
+    eventSubscribe: function(eventName){
+      this.eventsSubscribed.push(eventName);
+    },
+    eventUnsubscribe: function(eventName){
+      this.eventsSubscribed.splice(this.eventsSubscribed.indexOf(eventName), 1);
+    },
+    currentEventState: function(value){
+      this.currentEventStarted=value;
     }
   },
   created: function() {

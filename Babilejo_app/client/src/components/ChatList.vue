@@ -17,7 +17,10 @@
     :class="{highlight:users.indexOf(user)==selected, myself:user==username, 'hidden-settings':toggleSettingsVar}" 
     @click="selected = users.indexOf(user), selectChat(users.indexOf(user))">
       <div class="chat-preview-img">
-        <img :src="require('@/assets/Icon'+alternateIcon(users.indexOf(user))+'.svg')"/>
+        <img :class="{hide:eventsData.some(event => event.title === user)}" :src="require('@/assets/Icon'+alternateIcon(users.indexOf(user))+'.svg')"/>
+        <div class="image-cropper" :class="{hide:!eventsData.some(event => event.title === user)}">  
+          <img :src="eventImage(user)"/>
+        </div>
         <span class="messages-number" :class="{zerodigit:unreadMessages[users.indexOf(user)]==0,
         onedigit:unreadMessages[users.indexOf(user)]<=9,
         twodigit:unreadMessages[users.indexOf(user)]>9}">{{unreadMessages[users.indexOf(user)]}}</span>
@@ -53,7 +56,7 @@
         <div class="settings-about" :class="{'visible-settings':toggleAboutVar}">
           <img :src="require('@/assets/BabilejoLogoSmall.svg')"/>
           <p>“Babilejo” es un chat multilingüe de código abierto creado por Civiencia SL.</p> 
-          <p>Este recurso ha sido desarrollado por José Vicente Tomás Pérez Contacto: Mediotaku@gmail.com @mediotaku</p>
+          <p>Este recurso ha sido desarrollado por José Vicente Tomás Pérez Contacto: Mediotaku@gmail.com @mediotaku</p><p>Versión 1.0</p>
         </div>
       </div>
     </div>
@@ -102,6 +105,16 @@ export default {
         }
       }
       return chatpreview;
+    },
+    eventImage: function(user){
+      if(this.eventsData.some(event => event.title === user)){ //Primero, es un evento?
+        if(this.eventsData[this.eventsData.findIndex(event => event.title === user)].img===""){
+          return require('@/assets/Icon'+this.alternateIcon(this.users.indexOf(user))+'.svg');
+        }
+        else{
+          return 'https://babilejo.herokuapp.com/eventIcons/'+this.eventsData[this.eventsData.findIndex(event => event.title === user)].img;
+        }
+      }
     }
   },
   computed: {
@@ -189,6 +202,24 @@ div.myself {
   width: 5rem;
   margin-left: 0.3rem;
   align-self: center;
+}
+.image-cropper{
+  width: 73px;
+  height: 73px;
+  min-width: 73px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 50%;
+  margin-left: 0.5rem;
+  align-self: center;
+}
+
+.image-cropper img{
+  display: inline;
+  margin: -5px 0px 0px -5px;
+  margin-left: -5px;
+  height: 112%;
+  width: auto;
 }
 .messages-number{
   position:absolute; 
