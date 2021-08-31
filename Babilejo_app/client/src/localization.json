@@ -1,0 +1,77 @@
+{
+  "en":[
+    {
+      "chat_bar_default": "Select a user or event ",
+      "search-bar-placeholder": "Search on Babilejo...",
+      "event-flag": "Event",
+      "settings-bar": "Settings",
+      "notification-option": "Notifications",
+      "notification-option1": "Push Notifications",
+      "notification-option2": "Play sound",
+      "notification-option3": "Browser Tab Title",
+      "about-option": "About Babilejo",
+      "about-p1": "'Babilejo' is an open source multilingual chat created by Civiencia SL.",
+      "about-p2": "This resource has been developed by José Vicente Tomás Pérez. Contact: Mediotaku@gmail.com @mediotaku",
+      "about-p3": "Version 1.0",
+      "event-text1": "This event will start at:",
+      "event-text2": "This event has already started",
+      "event-text3": "Details of the event can be found by clicking on the event name at the top of the page",
+      "event-button": "Join",
+      "event-date": "Starts on ",
+      "event-description": "Event description",
+      "event-close": "Close window",
+      "event-join": "Join the event",
+      "event-leave": "Leave the event"
+    }
+  ],
+  "es":[
+    {
+      "chat-bar-default": "Select a user or event ",
+      "search-bar-placeholder": "Search on Babilejo...",
+      "event-flag": "Event",
+      "settings-bar": "Settings",
+      "notification-option": "Notifications",
+      "notification-option1": "Push Notifications",
+      "notification-option2": "Play sound",
+      "notification-option3": "Browser Tab Title",
+      "about-option": "About Babilejo",
+      "about-p1": "'Babilejo' is an open source multilingual chat created by Civiencia SL.",
+      "about-p2": "This resource has been developed by José Vicente Tomás Pérez. Contact: Mediotaku@gmail.com @mediotaku",
+      "about-p3": "Version 1.0",
+      "event-text1": "This event will start at:",
+      "event-text2": "This event has already started",
+      "event-text3": "Details of the event can be found by clicking on the event name at the top of the page",
+      "event-button": "Join",
+      "event-date": "Starts on the",
+      "event-description": "Event description",
+      "event-close": "Close window",
+      "event-join": "Join the event",
+      "event-leave": "Leave the event"
+    }
+  ],
+  "jp":[
+    {
+      "chat-bar-default": "Select a user or event ",
+      "search-bar-placeholder": "Search on Babilejo...",
+      "event-flag": "Event",
+      "settings-bar": "Settings",
+      "notification-option": "Notifications",
+      "notification-option1": "Push Notifications",
+      "notification-option2": "Play sound",
+      "notification-option3": "Browser Tab Title",
+      "about-option": "About Babilejo",
+      "about-p1": "'Babilejo' is an open source multilingual chat created by Civiencia SL.",
+      "about-p2": "This resource has been developed by José Vicente Tomás Pérez. Contact: Mediotaku@gmail.com @mediotaku",
+      "about-p3": "Version 1.0",
+      "event-text1": "This event will start at:",
+      "event-text2": "This event has already started",
+      "event-text3": "Details of the event can be found by clicking on the event name at the top of the page",
+      "event-button": "Join",
+      "event-date": "Starts on the",
+      "event-description": "Event description",
+      "event-close": "Close window",
+      "event-join": "Join the event",
+      "event-leave": "Leave the event"
+    }
+  ]
+}

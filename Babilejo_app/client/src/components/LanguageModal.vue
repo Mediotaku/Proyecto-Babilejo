@@ -1,6 +1,6 @@
 <template>
   <div id="myModal" class="modal" @click="$emit('closeLanguageModal')">
-    <div class="modal-content" @wheel="handleWheel()">
+    <div class="modal-content" @wheel="handleWheel()" v-touch:swipe.bottom="swipeHandlerDown" v-touch:swipe.top="swipeHandlerUp">
       <img :src="require('@/assets/'+currentLanguageIcon(localcurrentLanguage)+'Icon.svg')"/>
       <div class="wheel-selector">
         <div class="wheel-selector-text wheel2">{{currentLanguageName(languageSelectorArray[0])}}</div>
@@ -109,6 +109,28 @@ export default {
       //console.log(index1,index2,value,index3,index4);
       this.languageSelectorArray=[this.languageArray[index1],this.languageArray[index2],
       this.languageArray[value],this.languageArray[index3],this.languageArray[index4]];      
+    },
+    swipeHandlerDown: function(){
+      var initialindex=this.languageArray.indexOf(this.currentLanguage)
+        //console.log("scrolling up")
+        initialindex--;
+        if(initialindex<0){
+          initialindex=this.languageArray.length-1;
+        }
+        this.$emit('setCurrentLanguage', this.languageArray[initialindex]);
+      this.localcurrentLanguage=this.languageArray[initialindex];
+      this.renderLanguageList(initialindex);
+    },
+    swipeHandlerUp: function(){
+      var initialindex=this.languageArray.indexOf(this.currentLanguage)
+        //console.log("scrolling down")         
+        initialindex++;
+        if(initialindex>(this.languageArray.length-1)){
+          initialindex=0;
+        }
+        this.$emit('setCurrentLanguage', this.languageArray[initialindex]);
+      this.localcurrentLanguage=this.languageArray[initialindex];
+      this.renderLanguageList(initialindex);      
     }
   },
   //Antes de generar el DOM

@@ -33,7 +33,7 @@ import ChatRoom from './components/ChatRoom.vue';
 import ChatList from './components/ChatList.vue';
 import LanguageModal from './components/LanguageModal.vue';
 import EventModal from './components/EventModal.vue';
-
+import LocalizationConfig from './localization.json';
 
 export default {
   name: 'App',
@@ -58,7 +58,8 @@ export default {
       eventsData: [],
       eventsSubscribed: [],
       openEventModal: false,
-      currentEventStarted: false
+      currentEventStarted: false,
+      localization: []
     }
   },
   methods: {
@@ -201,7 +202,9 @@ export default {
       }
       this.socket.emit('msg', message);
       //Despues de enviarlo para el resto de usuarios, postearlo en mi mismo
-      message.usernameFrom = this.users[this.currentChatId];
+      if(message.isEvent){
+        message.usernameFrom = this.users[this.currentChatId];
+      }
       this.messages.push(message);
     },
     setChatId: function (value){
@@ -250,6 +253,7 @@ export default {
       }
     },
     eventSubscribe: function(eventName){
+      console.log(this.localization);
       this.eventsSubscribed.push(eventName);
     },
     eventUnsubscribe: function(eventName){
@@ -284,6 +288,8 @@ export default {
     });
   },
   mounted: function() {
+    //Asignar archivo de localizacion a su variable
+    this.localization = LocalizationConfig;
     //Necesita ser un operador arrow para que this no sea undefined
     window.addEventListener('blur', () =>{
       this.windowFocus=false;});

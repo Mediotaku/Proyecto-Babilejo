@@ -15,11 +15,11 @@
       </div>
       <div class="event-modal-description">
         <p>Descripción del evento</p>
-        <p>{{this.eventsData[this.eventsData.findIndex(event => event.title === this.currentChatUser)].description}}</p>
+        <p>{{eventsData[eventsData.findIndex(event => event.title === currentChatUser)].description}}</p>
       </div>
       <div class="event-modal-footer">
-        <div @click="$emit('closeEventModal')" :class="{fullength:!this.currentEventStarted}">Cerrar ventana</div>
-        <div @click="eventButton" :class="{redtext:buttonText()==='Salir del evento', hidden:!this.currentEventStarted}">{{buttonText()}}</div>
+        <div @click="$emit('closeEventModal')" :class="{fullength:!currentEventStarted}">Cerrar ventana</div>
+        <div @click="eventButton" :class="{redtext:buttonText()==='Salir del evento', hidden:!currentEventStarted}">{{buttonText()}}</div>
       </div>    
     </div>
   </div>
@@ -27,11 +27,12 @@
 
 <script>
 export default {
+  name: 'eventmodal',
   props: ['users','currentChatUser', 'eventsData', 'eventsSubscribed', 'currentEventStarted'],
   emits: ['closeEventModal', 'eventSubscribe', 'eventUnsubscribe'],
   data: function () {
     return {
-      
+      test: ""
     }
   },
   methods: {
