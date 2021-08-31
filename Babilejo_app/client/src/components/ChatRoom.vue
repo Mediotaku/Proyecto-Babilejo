@@ -5,20 +5,20 @@
       {{currentChatUser}}
     </div>
     <div class="chat-bar-text" v-else>
-      Selecciona a un usuario o evento
+      {{localization[currentLanguage][0].chat_bar_default}}
     </div>
     <div class="language-selector-button" @click="openModal">
       <img :src="require('@/assets/'+currentLanguageIcon(currentLanguage)+'Icon.svg')"/>
       {{currentLanguageName(currentLanguage)}}
     </div>
   </div>
-  <div class="chat-window" :class="{backgroundchat:currentChatUser!='','chat-window-event':(isEvent() && !isEventSubscribed())}">
+  <div class="chat-window" :class="{backgroundchat:currentChatUser!='','chat-window-event':(isEvent() && !isEventSubscribed()),['background-image-'+currentLanguage]:true}">
     <div class="event-join" :class="{hide:(!isEvent() || isEventSubscribed())}">
-      <p v-if="!currentEventStarted">Este evento comenzará a las:</p>
-      <p v-else>Este evento ya ha comenzado</p>
+      <p v-if="!currentEventStarted">{{localization[currentLanguage][0].event_text1}}</p>
+      <p v-else>{{localization[currentLanguage][0].event_text2}}</p>
       <p v-if="!currentEventStarted" class="event-date">{{eventDateFormat()}}</p>
-      <p>Puede consultar los detalles del mismo pulsando el nombre del evento en la parte superior</p>
-      <button @click="eventSubscribe" :disabled="!currentEventStarted">Unirse</button>
+      <p>{{localization[currentLanguage][0].event_text3}}</p>
+      <button @click="eventSubscribe" :disabled="!currentEventStarted">{{localization[currentLanguage][0].event_button}}</button>
     </div>
     <div v-if="currentChatUser!=''" class="messages" id="messages-box" :class="{hide:(isEvent() && !isEventSubscribed())}">
       <div :class="{'message-wrap':message.messageNick!=username, 'mymessage-wrap':message.messageNick==username}"
@@ -41,7 +41,7 @@
 
 export default {
   name: 'chatroom',
-  props: ['messages', 'currentChatUser', 'username', 'currentLanguage', 'eventsData', 'eventsSubscribed', 'currentEventStarted'],
+  props: ['messages', 'currentChatUser', 'username', 'currentLanguage', 'eventsData', 'eventsSubscribed', 'currentEventStarted', 'localization'],
   emits: ['openLanguageModal', 'sendMessage', 'openMenu', 'eventSubscribe', 'openEventModal', 'currentEventState'],
   data: function () {
     return {
@@ -117,7 +117,24 @@ export default {
       if(this.currentChatUser!="" && this.currentChatUser!=undefined && this.isEvent()){
         var aux = new Date(this.eventsData[this.eventsData.findIndex(event => event.title === this.currentChatUser)].startDate);
         var options = {hour:"numeric", minute:"numeric", year: 'numeric', month: 'long', day: 'numeric', timeZone: "UTC", timeZoneName: "short"  };
-        aux = aux.toLocaleDateString("es-ES", options)
+        if(this.currentLanguage=="es"){
+          aux = aux.toLocaleDateString("es-ES", options)
+        }
+        else if(this.currentLanguage=="en"){
+          aux = aux.toLocaleDateString("en-GB", options)
+        }
+        else if(this.currentLanguage=="ja"){
+          aux = aux.toLocaleDateString("ja-JP", options)
+        }
+        else if(this.currentLanguage=="ko"){
+          aux = aux.toLocaleDateString("en-GB", options)
+        }
+        else if(this.currentLanguage=="epo"){
+          aux = aux.toLocaleDateString("en-GB", options)
+        }
+        else if(this.currentLanguage=="fr"){
+          aux = aux.toLocaleDateString("en-GB", options)
+        }
         return aux
       }
     },
@@ -177,11 +194,39 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  /*Es necesario ~ para que la ruta funcione en <style>*/
-  background-image: url("~@/assets/Background1.svg");
   background-repeat: no-repeat;
   background-position: center;
   height: 91%;
+}
+
+.background-image-en{
+  /*Es necesario ~ para que la ruta funcione en <style>*/
+  background-image: url("~@/assets/Background-en.svg");
+}
+
+.background-image-es{
+  /*Es necesario ~ para que la ruta funcione en <style>*/
+  background-image: url("~@/assets/Background-es.svg");
+}
+
+.background-image-ja{
+  /*Es necesario ~ para que la ruta funcione en <style>*/
+  background-image: url("~@/assets/Background-jp.svg");
+}
+
+.background-image-fr{
+  /*Es necesario ~ para que la ruta funcione en <style>*/
+  background-image: url("~@/assets/Background-es.svg");
+}
+
+.background-image-ko{
+  /*Es necesario ~ para que la ruta funcione en <style>*/
+  background-image: url("~@/assets/Background-es.svg");
+}
+
+.background-image-epo{
+  /*Es necesario ~ para que la ruta funcione en <style>*/
+  background-image: url("~@/assets/Background-es.svg");
 }
 
 .chat-window-event{

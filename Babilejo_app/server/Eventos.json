@@ -11,7 +11,7 @@
   "events":[
     {
       "title": "Evento sin iniciar",
-      "startDate": "2021-08-31T09:50:00Z",
+      "startDate": "2021-09-03T09:50:00Z",
       "img": "interlingua.png",
       "description": "Esto es un evento de prueba para demostrar las capacidades de Babilejo. En este caso el evento no ha comenzado aún, por lo que aparece la fecha de inicio."
     },

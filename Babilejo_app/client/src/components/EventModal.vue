@@ -8,18 +8,18 @@
         <div>
           <div class="event-modal-title">{{currentChatUser}}</div>
           <div class="event-modal-date">
-            <div class="event-flag">Evento</div>
-            <div>Comienza el {{eventDateFormat()}}</div>
+            <div class="event-flag">{{localization[currentLanguage][0].event_flag}}</div>
+            <div>{{localization[currentLanguage][0].event_date + eventDateFormat()}}</div>
           </div>
         </div>
       </div>
       <div class="event-modal-description">
-        <p>Descripción del evento</p>
+        <p>{{localization[currentLanguage][0].event_description}}</p>
         <p>{{eventsData[eventsData.findIndex(event => event.title === currentChatUser)].description}}</p>
       </div>
       <div class="event-modal-footer">
-        <div @click="$emit('closeEventModal')" :class="{fullength:!currentEventStarted}">Cerrar ventana</div>
-        <div @click="eventButton" :class="{redtext:buttonText()==='Salir del evento', hidden:!currentEventStarted}">{{buttonText()}}</div>
+        <div @click="$emit('closeEventModal')" :class="{fullength:!currentEventStarted}">{{localization[currentLanguage][0].event_close}}</div>
+        <div @click="eventButton" :class="{redtext:buttonText()===localization[currentLanguage][0].event_leave, hidden:!currentEventStarted}">{{buttonText()}}</div>
       </div>    
     </div>
   </div>
@@ -28,7 +28,7 @@
 <script>
 export default {
   name: 'eventmodal',
-  props: ['users','currentChatUser', 'eventsData', 'eventsSubscribed', 'currentEventStarted'],
+  props: ['users','currentChatUser', 'eventsData', 'eventsSubscribed', 'currentEventStarted', 'currentLanguage', 'localization'],
   emits: ['closeEventModal', 'eventSubscribe', 'eventUnsubscribe'],
   data: function () {
     return {
@@ -40,7 +40,24 @@ export default {
       if(this.currentChatUser!="" && this.currentChatUser!=undefined){
         var aux = new Date(this.eventsData[this.eventsData.findIndex(event => event.title === this.currentChatUser)].startDate);
         var options = {hour:"numeric", minute:"numeric", year: 'numeric', month: 'long', day: 'numeric', timeZone: "UTC", timeZoneName: "short"  };
-        aux = aux.toLocaleDateString("es-ES", options)
+        if(this.currentLanguage=="es"){
+          aux = aux.toLocaleDateString("es-ES", options)
+        }
+        else if(this.currentLanguage=="en"){
+          aux = aux.toLocaleDateString("en-GB", options)
+        }
+        else if(this.currentLanguage=="ja"){
+          aux = aux.toLocaleDateString("ja-JP", options)
+        }
+        else if(this.currentLanguage=="ko"){
+          aux = aux.toLocaleDateString("en-GB", options)
+        }
+        else if(this.currentLanguage=="epo"){
+          aux = aux.toLocaleDateString("en-GB", options)
+        }
+        else if(this.currentLanguage=="fr"){
+          aux = aux.toLocaleDateString("en-GB", options)
+        }
         return aux
       }
     },
@@ -66,10 +83,10 @@ export default {
     },
     buttonText: function(){
       if(!this.isEventSubscribed()){
-        return 'Unirse al evento'
+        return this.localization[this.currentLanguage][0].event_join
       }
       else{
-        return 'Salir del evento'
+        return this.localization[this.currentLanguage][0].event_leave
       }
     },
     eventButton: function(){

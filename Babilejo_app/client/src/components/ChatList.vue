@@ -5,10 +5,10 @@
       <img id="back-button" @click="toggleSettingsVar=!toggleSettingsVar" :class="{'back-button-rotated':toggleSettingsVar,'hidden-settings':toggleNotificationsVar || toggleAboutVar}" src="@/assets/BackIcon.svg"/>
       <img id="settings-button" @click="toggleSettingsVar=!toggleSettingsVar" :class="{'settings-button-rotated':toggleSettingsVar}" src="@/assets/SettingsIcon.svg"/>
     </div>
-    <input id="chat-input" :class="{'hidden-settings':toggleSettingsVar}" type="text" v-model="search" placeholder="Buscar en Babilejo..." />
-    <div class="settings-name" :class="{'visible-settings':toggleSettingsVar && !toggleNotificationsVar && !toggleAboutVar}">Ajustes</div>
-    <div class="settings-name" :class="{'visible-settings':toggleNotificationsVar && !toggleAboutVar}">Notificaciones</div>
-    <div class="settings-name" :class="{'visible-settings':toggleAboutVar}">Sobre Babilejo</div>
+    <input id="chat-input" :class="{'hidden-settings':toggleSettingsVar}" type="text" v-model="search" :placeholder="localization[currentLanguage][0].search_bar_placeholder" />
+    <div class="settings-name" :class="{'visible-settings':toggleSettingsVar && !toggleNotificationsVar && !toggleAboutVar}">{{localization[currentLanguage][0].settings_bar}}</div>
+    <div class="settings-name" :class="{'visible-settings':toggleNotificationsVar && !toggleAboutVar}">{{localization[currentLanguage][0].notification_option}}</div>
+    <div class="settings-name" :class="{'visible-settings':toggleAboutVar}">{{localization[currentLanguage][0].about_option}}</div>
   </div>
   <div class="chat-list">
     <!--Syntax the clase dinamica: si selected es igual al index actual (selected se guarda con el click), 
@@ -26,7 +26,7 @@
         twodigit:unreadMessages[users.indexOf(user)]>9}">{{unreadMessages[users.indexOf(user)]}}</span>
       </div>
       <div class="chat-data">
-        <div class="event-flag" :class="{hide:!eventsData.some(event => event.title === user)}">Evento</div>
+        <div class="event-flag" :class="{hide:!eventsData.some(event => event.title === user), flagjp:currentLanguage=='ja', flagen:currentLanguage=='en'}">{{localization[currentLanguage][0].event_flag}}</div>
         <div class="chat-name" >{{user}}</div>
         <div class="chat-last" >{{lastMessage(user)}}</div>
       </div>
@@ -39,24 +39,24 @@
       <div class="settings-container-outer" 
       :class="{'notifications-opened':toggleNotificationsVar,'about-opened':toggleAboutVar}">
         <div class="settings-container">
-          <div @click="toggleNotificationsVar=!toggleNotificationsVar" class="settings-option">
+          <div @click="toggleNotificationsVar=!toggleNotificationsVar" class="settings-option" :class="{'settings-option-jp':currentLanguage=='ja'}">
             <img :src="require('@/assets/NotificationIcon.svg')"/>
-            <div>Notificaciones</div>
+            <div>{{localization[currentLanguage][0].notification_option}}</div>
           </div>
-          <div @click="toggleAboutVar=!toggleAboutVar" class="settings-option">
+          <div @click="toggleAboutVar=!toggleAboutVar" class="settings-option" :class="{'settings-option-jp':currentLanguage=='ja'}">
             <img :src="require('@/assets/BabilejoB.svg')"/>
-            <div>Sobre Babilejo</div>
+            <div>{{localization[currentLanguage][0].about_option}}</div>
           </div>
         </div>
-        <div class="settings-notifications" :class="{'visible-settings':toggleNotificationsVar}">
-          <label><input type="checkbox" value="push_checkbox" v-model="push_checkbox" @change="$emit('pushNotifications', push_checkbox)">Notificaciones en pantalla</label><br>
-          <label><input type="checkbox" value="sound_checkbox" v-model="sound_checkbox" @change="$emit('soundNotifications', sound_checkbox)">Notificaciones sonoras</label><br>
-          <label><input type="checkbox" value="title_checkbox" v-model="title_checkbox" @change="$emit('titleNotifications', title_checkbox)">Título de la pestaña</label><br>
+        <div class="settings-notifications" :class="{'visible-settings':toggleNotificationsVar,'settings-notifications-jp':currentLanguage=='ja'}">
+          <label><input type="checkbox" value="push_checkbox" v-model="push_checkbox" @change="$emit('pushNotifications', push_checkbox)">{{localization[currentLanguage][0].notification_option1}}</label><br>
+          <label><input type="checkbox" value="sound_checkbox" v-model="sound_checkbox" @change="$emit('soundNotifications', sound_checkbox)">{{localization[currentLanguage][0].notification_option2}}</label><br>
+          <label><input type="checkbox" value="title_checkbox" v-model="title_checkbox" @change="$emit('titleNotifications', title_checkbox)">{{localization[currentLanguage][0].notification_option3}}</label><br>
         </div>
         <div class="settings-about" :class="{'visible-settings':toggleAboutVar}">
           <img :src="require('@/assets/BabilejoLogoSmall.svg')"/>
-          <p>“Babilejo” es un chat multilingüe de código abierto creado por Civiencia SL.</p> 
-          <p>Este recurso ha sido desarrollado por José Vicente Tomás Pérez Contacto: Mediotaku@gmail.com @mediotaku</p><p>Versión 1.0</p>
+          <p>{{localization[currentLanguage][0].about_p1}}</p> 
+          <p>{{localization[currentLanguage][0].about_p2}}</p><p>{{localization[currentLanguage][0].about_p3}}</p>
         </div>
       </div>
     </div>
@@ -67,7 +67,7 @@
 <script>
 export default {
   name: 'chatlist',
-  props: ['users', 'username', 'unreadMessages', 'messages', 'eventsData'],
+  props: ['users', 'username', 'unreadMessages', 'messages', 'eventsData', 'currentLanguage', 'localization'],
   emits: ['selectChat', 'pushNotifications', 'titleNotifications','soundNotifications'],
   data: function () {
     return {
@@ -269,6 +269,15 @@ div.myself {
   width: 2.7rem;
   border-radius: 26px;
 }
+
+.flagjp{
+  width: 3.4rem;
+}
+
+.flagen{
+  width: 2.3rem;
+}
+
 .chat-data {
   width: 100%;
   min-width: 0;
@@ -430,6 +439,11 @@ div.myself {
   cursor: pointer;
   transition: opacity 0.5s ease-in, visibility 0.5s ease-in;
 }
+
+.settings-option-jp{
+  width: 15rem;
+}
+
 .settings-option img{
   width: 3rem;
   margin-right: 1rem;
@@ -454,6 +468,10 @@ div.myself {
   opacity:0;
   visibility: hidden;
   transition: opacity 0.5s ease-in, visibility 0.5s ease-in;
+}
+
+.settings-notifications-jp{
+  margin-left: 6rem !important;
 }
 
 .settings-notifications input{
@@ -499,6 +517,9 @@ div.myself {
 @media (max-width: 450px){
   .settings-notifications{
     margin-left: 8rem;
+  }
+  .settings-notifications-jp{
+    margin-left: 5rem !important;
   }
 }
 @media (max-width: 370px){

@@ -4,13 +4,14 @@
     <div id="chat-sidebar" class="chat-sidebar">
       <ChatList v-bind:users="users" v-bind:username="username"  @selectChat="setChatId" 
       v-bind:unreadMessages="unreadMessages" v-bind:messages="messages" @pushNotifications="setPushNotifications"
-      @titleNotifications="setTitleNotifications" @soundNotifications="setSoundNotifications" v-bind:eventsData="eventsData"/>
+      @titleNotifications="setTitleNotifications" @soundNotifications="setSoundNotifications" v-bind:eventsData="eventsData"
+      v-bind:localization="localization" v-bind:currentLanguage="currentLanguage"/>
     </div>
     <div class="chat-room">
       <ChatRoom v-bind:messages="messages" v-bind:currentChatUser="currentChatUser" v-bind:username="username" v-bind:eventsData="eventsData"
        @sendMessage="this.sendMessage" v-bind:currentLanguage="currentLanguage" @openLanguageModal="openmodal=true" v-bind:eventsSubscribed="eventsSubscribed"
        @openMenu="openMenu" @eventSubscribe="eventSubscribe" @openEventModal="openEventModal=true" v-bind:currentEventStarted="currentEventStarted"
-       @currentEventState="currentEventState"/>
+       @currentEventState="currentEventState" v-bind:localization="localization"/>
     </div>
   </div>
   <div v-if="showSignIn">
@@ -22,7 +23,8 @@
   </div>
   <div v-if="openEventModal">
     <EventModal v-bind:users="users" v-bind:currentChatUser="currentChatUser" v-bind:eventsData="eventsData" @eventUnsubscribe="eventUnsubscribe"
-    v-bind:eventsSubscribed="eventsSubscribed" @closeEventModal="openEventModal=false" @eventSubscribe="eventSubscribe" v-bind:currentEventStarted="currentEventStarted"/>
+    v-bind:eventsSubscribed="eventsSubscribed" @closeEventModal="openEventModal=false" @eventSubscribe="eventSubscribe" 
+    v-bind:currentEventStarted="currentEventStarted" v-bind:localization="localization" v-bind:currentLanguage="currentLanguage"/>
   </div>
 </template>
 
@@ -253,7 +255,6 @@ export default {
       }
     },
     eventSubscribe: function(eventName){
-      console.log(this.localization);
       this.eventsSubscribed.push(eventName);
     },
     eventUnsubscribe: function(eventName){
@@ -289,7 +290,7 @@ export default {
   },
   mounted: function() {
     //Asignar archivo de localizacion a su variable
-    this.localization = LocalizationConfig;
+    this.localization = LocalizationConfig
     //Necesita ser un operador arrow para que this no sea undefined
     window.addEventListener('blur', () =>{
       this.windowFocus=false;});
