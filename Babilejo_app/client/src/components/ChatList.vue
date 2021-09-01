@@ -291,6 +291,7 @@ div.myself {
   white-space: nowrap;
   overflow: hidden;
   padding-top: 0.2rem;
+  max-width: 18rem;
 }
 .watermark{
   position: absolute;

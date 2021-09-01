@@ -21,7 +21,11 @@
       "event_description": "Event description",
       "event_close": "Close window",
       "event_join": "Join the event",
-      "event_leave": "Leave the event"
+      "event_leave": "Leave the event",
+      "input_message": "Write your message...",
+      "message_option_reply": "Reply",
+      "message_option_original": "Show original",
+      "message_option_translate": "Show translation"
     }
   ],
   "es":[
@@ -46,7 +50,11 @@
       "event_description": "Descripción del evento",
       "event_close": "Cerrar ventana",
       "event_join": "Unirse al evento",
-      "event_leave": "Salir del evento"
+      "event_leave": "Salir del evento",
+      "input_message": "Introduce tu mensaje...",
+      "message_option_reply": "Responder",
+      "message_option_original": "Ver original",
+      "message_option_translate": "Ver traducción"
     }
   ],
   "ja":[
@@ -59,7 +67,7 @@
       "notification_option1": "デスクトップ通知",
       "notification_option2": "通知音",
       "notification_option3": "ブラウザタブのタイトル",
-      "about_option": "バビレホについて",
+      "about_option": "アプリ情報",
       "about_p1": "「Babilejo」は、Civiencia SLが作成したオープンソースの多言語チャットです。",
       "about_p2": "このプリケーションは、José Vicente Tomás Pérezが開発しました。お問い合わせ Mediotaku@gmail.com @mediotaku",
       "about_p3": "バージョン 1.0",
@@ -71,7 +79,11 @@
       "event_description": "イベント内容",
       "event_close": "閉じる",
       "event_join": "登録",
-      "event_leave": "登録解除"
+      "event_leave": "登録解除",
+      "input_message": "メッセージを入力...",
+      "message_option_reply": "返信",
+      "message_option_original": "原文を表示",
+      "message_option_translate": "翻訳を表示"
     }
   ],
   "ko":[
@@ -96,7 +108,11 @@
       "event_description": "Descripción del evento",
       "event_close": "Cerrar ventana",
       "event_join": "Unirse al evento",
-      "event_leave": "Salir del evento"
+      "event_leave": "Salir del evento",
+      "input_message": "Introduce tu mensaje...",
+      "message_option_reply": "Responder",
+      "message_option_original": "Ver original",
+      "message_option_translate": "Ver traducción"
     }
   ],
   "fr":[
@@ -121,7 +137,11 @@
       "event_description": "Descripción del evento",
       "event_close": "Cerrar ventana",
       "event_join": "Unirse al evento",
-      "event_leave": "Salir del evento"
+      "event_leave": "Salir del evento",
+      "input_message": "Introduce tu mensaje...",
+      "message_option_reply": "Responder",
+      "message_option_original": "Ver original",
+      "message_option_translate": "Ver traducción"
     }
   ],
   "epo":[
@@ -146,7 +166,11 @@
       "event_description": "Descripción del evento",
       "event_close": "Cerrar ventana",
       "event_join": "Unirse al evento",
-      "event_leave": "Salir del evento"
+      "event_leave": "Salir del evento",
+      "input_message": "Introduce tu mensaje...",
+      "message_option_reply": "Responder",
+      "message_option_original": "Ver original",
+      "message_option_translate": "Ver traducción"
     }
   ]
 }

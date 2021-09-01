@@ -98,7 +98,79 @@ export default {
             this.unreadMessages[this.users.indexOf(message.usernameFrom)]++;
           }
         }
-        //Tienen los dos usuarios el mismo idioma seleccionado?
+        //Primero, si es una reply, traducir el mensaje al que se responde
+        if(message.isReply){
+
+          if(message.replyLanguage=='epo' || this.currentLanguage=='epo'){
+            if(message.replyLanguage=='epo'){
+              this.requestTranslationEsperantoReply(message, 0).then((result) => {
+                message=result;
+                //Si el lenguaje objetivo es ingles, enviar a la interfaz, sino, traducir de nuevo a la lengua objetivo
+                if(this.currentLanguage!="en"){
+                  this.requestTranslationReply(message).then((result) => {
+                    message=result;
+                    this.translationLastStep(message);
+                  });
+                }
+              });
+            }
+            else if(this.currentLanguage=='epo'){
+              this.requestTranslationReply(message, "en").then((result) => {
+                message=result;
+                this.requestTranslationEsperantoReply(message, 1).then((result) => {
+                  message=result;
+                  this.translationLastStep(message);
+                });
+              });  
+            } 
+          }
+          else{
+            this.requestTranslationReply(message).then((result) => {
+              message=result;
+              this.translationLastStep(message);
+            });  
+          }
+
+        }
+        else{
+          //Tienen los dos usuarios el mismo idioma seleccionado?
+          if(message.language==this.currentLanguage){
+            this.postMessage(message);
+          }
+          else if(message.language=='epo' || this.currentLanguage=='epo'){
+            if(message.language=='epo'){
+              this.requestTranslationEsperanto(message, 0).then((result) => {
+                message=result;
+                //Si el lenguaje objetivo es ingles, enviar a la interfaz, sino, traducir de nuevo a la lengua objetivo
+                if(this.currentLanguage=="en"){
+                  this.postMessage(message);
+                }
+                else{
+                  this.requestTranslation(message).then((result) => {
+                    this.postMessage(result);
+                  });
+                }
+              });
+            }
+            else if(this.currentLanguage=='epo'){
+              this.requestTranslation(message, "en").then((result) => {
+                message=result;
+                this.requestTranslationEsperanto(message, 1).then((result) => {
+                  this.postMessage(result);
+                });
+              });  
+            } 
+          }
+          else{
+            this.requestTranslation(message).then((result) => {
+              this.postMessage(result);
+            });  
+          }
+        }    
+      })
+    },
+    translationLastStep: function(message){
+      //Tienen los dos usuarios el mismo idioma seleccionado?
         if(message.language==this.currentLanguage){
           this.postMessage(message);
         }
@@ -131,7 +203,6 @@ export default {
             this.postMessage(result);
           });  
         }    
-      })
     },
     async requestTranslation(message, targetLanguage = this.currentLanguage) {
       const res = await fetch("https://translate.astian.org/translate", {
@@ -144,7 +215,24 @@ export default {
         headers: { "Content-Type": "application/json" }
       });
       const json = await res.json();
+      message.language = targetLanguage;
       message.msg = json.translatedText;
+      
+      return message;
+    },
+    async requestTranslationReply(message, targetLanguage = this.currentLanguage) {
+      const res = await fetch("https://translate.astian.org/translate", {
+        method: "POST",
+        body: JSON.stringify({
+          q: message.replyMsg,
+          source: message.replyLanguage,
+          target: targetLanguage
+        }),
+        headers: { "Content-Type": "application/json" }
+      });
+      const json = await res.json();
+      message.replyLanguage = targetLanguage;
+      message.replyMsg = json.translatedText;
       
       return message;
     },
@@ -174,6 +262,32 @@ export default {
         
       return message
     },
+    async requestTranslationEsperantoReply(message,direction){
+      var langPair=""
+      if(direction==0){
+        langPair="epo|eng";
+        message.replyLanguage="en";
+      }
+      else{
+        langPair="eng|epo";
+        message.replyLanguage="epo";
+      }      
+      let requestBody = new URLSearchParams(Object.entries({
+        langpair: langPair,
+        markUnknown: "no",
+        prefs: "",
+        q: message.replyMsg
+      })).toString();
+      const res = await fetch("https://apertium.org/apy/translate", {
+      method: "POST",
+      body: requestBody,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      });
+      const json = await res.json();
+      message.replyMsg=json.responseData.translatedText;
+        
+      return message
+    },
     postMessage: function (message){
       //Notificaciones de escritorio activadas y si es un evento, estar suscrito
       if((this.pushNotifications && !message.isEvent) || (this.pushNotifications && message.isEvent && this.eventsSubscribed.some(event => event === message.usernameFrom))){
@@ -192,22 +306,32 @@ export default {
 
       this.joinServer();
     },
-    sendMessage: function (msg, isevent = false) {
-      let message = {
-          isEvent: isevent,
-          usernameFrom: this.username,
-          usernameTo: this.users[this.currentChatId],
-          msg: msg,
-          timestamp: this.getTime(),
-          language: this.currentLanguage,
-          messageNick: this.username
+    sendMessage: function (msg, isevent = false, isreply = false, replynick = "", replymsg = "", replytime = "", replylanguage = "") {
+      if(msg!=""){  //Comprobar que no está vacio
+        let message = {
+            isEvent: isevent,
+            usernameFrom: this.username,
+            usernameTo: this.users[this.currentChatId],
+            msg: msg,
+            originalMsg: msg,
+            timestamp: this.getTime(),
+            language: this.currentLanguage,
+            messageNick: this.username,
+            messageOptions: false,
+            currentMessageShown: 0, //0 es la traduccion, 1 es el original
+            isReply: isreply,
+            replyNick: replynick,
+            replyMsg: replymsg,
+            replyTimestamp: replytime,
+            replyLanguage: replylanguage
+        }
+        this.socket.emit('msg', message);
+        //Despues de enviarlo para el resto de usuarios, postearlo en mi mismo
+        if(message.isEvent){
+          message.usernameFrom = this.users[this.currentChatId];
+        }
+        this.messages.push(message);
       }
-      this.socket.emit('msg', message);
-      //Despues de enviarlo para el resto de usuarios, postearlo en mi mismo
-      if(message.isEvent){
-        message.usernameFrom = this.users[this.currentChatId];
-      }
-      this.messages.push(message);
     },
     setChatId: function (value){
       this.currentChatId = value;

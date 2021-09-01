@@ -8,7 +8,7 @@
         <div>
           <div class="event-modal-title">{{currentChatUser}}</div>
           <div class="event-modal-date">
-            <div class="event-flag">{{localization[currentLanguage][0].event_flag}}</div>
+            <div class="event-flag" :class="{flagjp:currentLanguage=='ja'}">{{localization[currentLanguage][0].event_flag}}</div>
             <div>{{localization[currentLanguage][0].event_date + eventDateFormat()}}</div>
           </div>
         </div>
@@ -170,6 +170,10 @@ export default {
   width: 2.7rem;
   height: 0.95rem;
   border-radius: 26px;
+}
+
+.flagjp{
+  width: 3.4rem;
 }
 
 .event-modal-header{

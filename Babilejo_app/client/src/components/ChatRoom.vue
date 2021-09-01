@@ -24,14 +24,44 @@
       <div :class="{'message-wrap':message.messageNick!=username, 'mymessage-wrap':message.messageNick==username}"
       v-for="message in currentMessages" v-bind:key="messages.indexOf(message)">
         <div :class="{message:message.messageNick!=username, mymessage:message.messageNick==username}">
-          <div class="username" :class="{hide:message.messageNick==username}">{{message.messageNick}}</div>
-          <div class="message-text">{{message.msg}}</div>
-          <div class="message-time">{{message.timestamp}}</div>
+          <div class="message-full">
+            <div class="reply-body" v-if="message.isReply" @click="message.messageOptions=false">
+              <div class="username">{{message.replyNick}}</div>
+              <div class="message-text">{{message.replyMsg}}</div>
+              <div class="message-time">{{message.replyTimestamp}}</div>
+            </div>
+            <div class="message-body" @click="message.messageOptions=false">
+              <div class="username" :class="{hide:message.messageNick==username}">{{message.messageNick}}</div>
+              <div class="message-text">{{messageToShow(message)}}</div>
+              <div class="message-time">{{message.timestamp}}</div>
+            </div>
+          </div>
+          <img class="message-options" @click="message.messageOptions=!message.messageOptions" :class="{hide:message.messageNick==username}" :src="require('@/assets/message-options.svg')"/>
+          <div class="message-options-bubble" v-show="message.messageOptions" :class="{'message-options-bubble-en':currentLanguage=='en'}" >
+            <div class="message-options-reply" @click="openPreviewReply(message)">
+              <img :src="require('@/assets/message-reply.svg')" />{{localization[currentLanguage][0].message_option_reply}}
+            </div>
+            <div v-if="message.currentMessageShown==0" class="message-options-original" @click="message.currentMessageShown=1">
+              <img :src="require('@/assets/message-original.svg')"/>{{localization[currentLanguage][0].message_option_original}}
+            </div>
+            <div v-else class="message-options-original" @click="message.currentMessageShown=0">
+              <img :src="require('@/assets/message-translation.svg')"/>{{localization[currentLanguage][0].message_option_translate}}
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div v-if="currentChatUser!=''" class="input-container" :class="{hide:(isEvent() && !isEventSubscribed())}" >
-      <input type="text" v-model="msg" @keyup.enter="sendMessage" placeholder="Introduce tu mensaje...">
+    <div v-if="currentChatUser!=''" class="input-preview" :class="{hide:(isEvent() && !isEventSubscribed()) || !openPreview}">
+      <img :src="require('@/assets/message-reply.svg')"/>
+      <div class="message-preview">
+        <div class="username">{{previewUsername}}</div>
+        <div class="message-text">{{previewMsg}}</div>
+        <div class="message-time">{{previewTimestamp}}</div>
+      </div>
+      <img :src="require('@/assets/cancel-preview.svg')" @click="openPreview=false"/>
+    </div>
+    <div v-if="currentChatUser!=''" class="input-container" :class="{hide:(isEvent() && !isEventSubscribed()), openPreviewMargin:openPreview}" >
+      <input type="text" v-model="msg" @keyup.enter="sendMessage" :placeholder="localization[currentLanguage][0].input_message">
       <img @click="sendMessage" src="@/assets/SendIcon.svg"/>
     </div>
   </div>
@@ -46,13 +76,23 @@ export default {
   data: function () {
     return {
       msg: "",
-      eventTime: ""
+      eventTime: "",
+      openPreview: false,
+      previewUsername: "",
+      previewMsg: "",
+      previewTimestamp: "",
+      previewLanguage: ""
     }
   },
   methods: {
     sendMessage: function() {
-      this.$emit('sendMessage', this.msg, this.isEvent());
+      this.$emit('sendMessage', this.msg, this.isEvent(), this.openPreview, this.previewUsername, this.previewMsg, this.previewTimestamp, this.previewLanguage);
       this.msg = "";
+      this.previewUsername= "",
+      this.previewTimestamp= "",
+      this.previewMsg= "";
+      this.previewLanguage= ""
+      this.openPreview=false;
       //this.updateScroll();
     },
     updateScroll: function(){
@@ -154,6 +194,22 @@ export default {
       if(this.isEvent()){
         this.$emit('openEventModal');
       }
+    },
+    messageToShow: function(message){
+      if(message.currentMessageShown==0){
+        return message.msg
+      }
+      else if(message.currentMessageShown==1){
+        return message.originalMsg
+      }
+    },
+    openPreviewReply: function(message){
+      message.messageOptions=false;
+      this.previewUsername=message.messageNick;
+      this.previewMsg=message.msg;
+      this.previewTimestamp=message.timestamp;
+      this.previewLanguage=message.language;
+      this.openPreview=true;
     }
   },
   watch: { 
@@ -317,7 +373,9 @@ export default {
   margin-left: 12%;
   box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.47);
   margin-bottom:2rem;
-  word-break: break-all;
+  word-break: break-word;
+  display: flex;
+  flex-direction: row;
 } 
 
 .message:after {
@@ -335,12 +393,19 @@ export default {
   transform: rotate(-37deg);
 }
 
+.message-full{
+  display: flex;
+  flex-direction: column;
+}
+
+
 .username{
   font-family: 'Roboto';
   font-weight: bold;
   font-size: 0.8rem;
   color:#1DDB49;
   padding-bottom: 0.2rem;
+  margin-right: 0.5rem;
 }
 
 .message-time{
@@ -362,7 +427,7 @@ export default {
   margin-right: 12%;
   box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.2);
   margin-bottom:2rem;
-  word-break: break-all;
+  word-break: break-word;
 } 
 
 .mymessage:after {
@@ -380,6 +445,11 @@ export default {
   transform: rotate(-130deg);
 }
 
+.message-options{
+  max-width: 1.5rem;
+  align-self: flex-start;
+}
+
 .input-container{
   display: flex;
   flex-direction: row;
@@ -392,6 +462,10 @@ export default {
   align-self: center;
   margin-bottom: 3rem;
   margin-top: 3rem;
+}
+
+.openPreviewMargin{
+  margin-top: 0;
 }
 
 .input-container input{
@@ -410,6 +484,60 @@ export default {
   margin-right: 0.5rem;
   height: auto;
   cursor: pointer;
+}
+
+.input-preview{
+  width: 75%;
+  min-height: 8rem;
+  background: #FFFFFF;
+  align-self: center;
+  border-radius: 30px 30px 0px 0px;
+  display: flex;
+}
+
+.input-preview img{
+  width: 2rem;
+  margin-left: 1rem;
+}
+
+.input-preview img:nth-of-type(2){
+  width: 1.5rem;
+  margin-left: auto;
+  margin-right: 1rem;
+  margin-top: 1rem;
+  align-self: flex-start;
+  cursor: pointer;
+}
+
+.message-preview{
+  font-family: 'Roboto';
+  font-weight: normal;
+  font-size: 1.2rem;
+  color:black;
+	background: #FAFAFA;
+	border-radius: 25px;
+  max-width: 20rem;
+  padding: 1rem;
+  margin-left: 1rem;
+  margin-right: 1rem;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.47);
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  word-break: break-word;
+}
+
+.reply-body{
+  font-family: 'Roboto';
+  font-weight: normal;
+  font-size: 1.2rem;
+  color:black;
+	background: #FAFAFA;
+	border-radius: 25px;
+  max-width: 20rem;
+  padding: 1rem;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.47);
+  margin-bottom: 0.5rem;
+  word-break: break-word;
 }
 
 .event-join{
@@ -470,6 +598,62 @@ export default {
   cursor: auto;
 }
 
+.message-options-bubble{
+  font-family: 'Roboto';
+  font-weight: normal;
+  font-size: 18px;
+  position: absolute;
+  z-index:6;
+  background: #F2F2F2;
+  color: #766969;
+  width: 165px;
+  height: 65px;
+  padding: 10px 5px 5px 5px;
+  filter: drop-shadow(3px 3px 4px rgba(0, 0, 0, 0.2));
+  border-radius: 14px;
+  top: -70px;
+  right: -117px;
+}
+
+.message-options-bubble-en{
+  width: 180px;
+  right: -129px;
+}
+
+.message-options-reply{
+  margin-left: 10px;
+  display:flex;
+  align-items: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.message-options-reply img{
+  margin-right: 5px;
+}
+.message-options-original{
+  margin-left: 10px; 
+  display:flex;
+  align-items: center;
+  cursor: pointer;
+}
+.message-options-original img{
+  margin-right: 5px;
+}
+
+.message-options-bubble:after {
+  content: '';
+  position: absolute;
+  display: block;
+  width: 0;
+  z-index: 1;
+  border-style: solid;
+  border-color: #F2F2F2 transparent;
+  border-width: 19px 12px 0;
+  bottom: -19px;
+  left: 17%;
+  margin-left: -12px;
+}
+
 /*IDs*/
 
 #menu-button{
@@ -526,6 +710,12 @@ export default {
     margin-left: auto;
     margin-right: auto;
   }
+  .input-preview{
+    width: 65%;
+  }
+  .message-preview{
+    font-size: 0.8rem;
+  }
 }
 @media (max-width: 325px){
   .chat-bar-text{
@@ -546,6 +736,16 @@ export default {
   }
   .chat-bar{
     min-height: 12%;
+  }
+}
+@media (max-width: 550px){
+  .message-options-bubble{
+    top: -70px;
+    right: -7px;
+  }
+  .message-options-bubble:after {
+    left: 80%;
+    margin-left: -12px;
   }
 }
 </style>
